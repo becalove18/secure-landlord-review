@@ -1,0 +1,114 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f4f6f8;
+  color: #222222;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+nav {
+  padding: 16px;
+  background: #243447;
+  text-align: center;
+}
+
+nav a {
+  display: inline-block;
+  margin: 4px 10px;
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+main {
+  width: calc(100% - 32px);
+  max-width: 800px;
+  margin: 32px auto;
+  padding: 28px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+}
+
+h1,
+h2 {
+  color: #243447;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+label {
+  margin-top: 8px;
+  font-weight: bold;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid #aeb7c2;
+  border-radius: 5px;
+  font: inherit;
+}
+
+textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+button {
+  margin-top: 14px;
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  background: #275dad;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1d4787;
+}
+
+a {
+  color: #275dad;
+}
+
+.review-card {
+  margin: 20px 0;
+  padding: 18px;
+  border: 1px solid #d7dde3;
+  border-left: 5px solid #275dad;
+  border-radius: 6px;
+  background: #f8f9fb;
+}
+
+.review-card h2 {
+  margin-top: 0;
+}
+
+@media (max-width: 600px) {
+  main {
+    margin: 16px auto;
+    padding: 20px;
+  }
+
+  nav a {
+    display: block;
+    margin: 8px;
+  }
+}

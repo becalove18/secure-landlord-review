@@ -42,6 +42,15 @@ app.use(
   })
 );
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 app.post(
   "/login",
   [
@@ -110,6 +119,93 @@ app.get("/submit-review", requireLogin, (req, res) => {
   );
 });
 
+app.post(
+  "/submit-review",
+  requireLogin,
+  [
+    body("landlord_name")
+      .trim()
+      .isLength({ min: 2, max: 100 })
+      .withMessage(
+        "Landlord name must be between 2 and 100 characters."
+      ),
+
+    body("property_address")
+      .trim()
+      .isLength({ min: 5, max: 200 })
+      .withMessage(
+        "Property address must be between 5 and 200 characters."
+      ),
+
+    body("rating")
+      .isInt({ min: 1, max: 5 })
+      .withMessage("Rating must be between 1 and 5."),
+
+    body("review_text")
+      .trim()
+      .isLength({ min: 10, max: 1000 })
+      .withMessage(
+        "Review must be between 10 and 1000 characters."
+      ),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).send(errors.array()[0].msg);
+    }
+
+    const {
+      landlord_name,
+      property_address,
+      rating,
+      review_text,
+    } = req.body;
+
+    const client = await pool.connect();
+
+    try {
+      await client.query("BEGIN");
+
+      const landlordResult = await client.query(
+        `INSERT INTO landlords
+         (landlord_name, property_address)
+         VALUES ($1, $2)
+         RETURNING id`,
+        [landlord_name, property_address]
+      );
+
+      const landlordId = landlordResult.rows[0].id;
+
+      await client.query(
+        `INSERT INTO reviews
+         (user_id, landlord_id, rating, review_text)
+         VALUES ($1, $2, $3, $4)`,
+        [
+          req.session.userId,
+          landlordId,
+          Number(rating),
+          review_text,
+        ]
+      );
+
+      await client.query("COMMIT");
+
+      res.redirect("/reviews");
+    } catch (error) {
+      await client.query("ROLLBACK");
+
+      console.error("Review submission error:", error);
+
+      res.status(500).send(
+        "The review could not be submitted."
+      );
+    } finally {
+      client.release();
+    }
+  }
+);
+
 app.get("/logout", (req, res) => {
   req.session.destroy((error) => {
     if (error) {
@@ -120,6 +216,106 @@ app.get("/logout", (req, res) => {
     res.clearCookie("connect.sid");
     res.redirect("/");
   });
+});
+
+app.get("/reviews", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        landlords.landlord_name,
+        landlords.property_address,
+        reviews.rating,
+        reviews.review_text,
+        reviews.created_at,
+        users.username
+      FROM reviews
+      INNER JOIN landlords
+        ON reviews.landlord_id = landlords.id
+      INNER JOIN users
+        ON reviews.user_id = users.id
+      ORDER BY reviews.created_at DESC
+    `);
+
+    const reviewCards = result.rows
+      .map((review) => {
+        return `
+          <section class="review-card">
+            <h2>${escapeHtml(review.landlord_name)}</h2>
+
+            <p>
+              <strong>Property:</strong>
+              ${escapeHtml(review.property_address)}
+            </p>
+
+            <p>
+              <strong>Rating:</strong>
+              ${escapeHtml(review.rating)} out of 5
+            </p>
+
+            <p>
+              <strong>Review:</strong>
+              ${escapeHtml(review.review_text)}
+            </p>
+
+            <p>
+              <strong>Posted by:</strong>
+              ${escapeHtml(review.username)}
+            </p>
+
+            <p>
+              <strong>Date:</strong>
+              ${escapeHtml(
+                new Date(review.created_at).toLocaleString()
+              )}
+            </p>
+          </section>
+        `;
+      })
+      .join("");
+
+    res.send(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0"
+        >
+
+        <title>Landlord Reviews</title>
+
+        <link rel="stylesheet" href="/style.css">
+      </head>
+
+      <body>
+        <nav>
+          <a href="/">Home</a>
+          <a href="/register">Register</a>
+          <a href="/login">Login</a>
+          <a href="/submit-review">Submit Review</a>
+          <a href="/logout">Logout</a>
+        </nav>
+
+        <main>
+          <h1>Landlord Reviews</h1>
+
+          ${
+            reviewCards ||
+            "<p>No reviews have been submitted yet.</p>"
+          }
+        </main>
+      </body>
+      </html>
+    `);
+  } catch (error) {
+    console.error("Review display error:", error);
+
+    res.status(500).send(
+      "The reviews could not be loaded."
+    );
+  }
 });
 
 app.get("/", (req, res) => {
