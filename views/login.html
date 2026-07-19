@@ -10,10 +10,29 @@
   <main>
     <h1>Login</h1>
 
-    <p>The login feature will be completed next.</p>
+    <form action="/login" method="POST">
+      <label for="email">Email Address</label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        required
+      >
+
+      <label for="password">Password</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        required
+      >
+
+      <button type="submit">Login</button>
+    </form>
 
     <p>
-      <a href="/register">Create another account</a>
+      Need an account?
+      <a href="/register">Register</a>
     </p>
 
     <p>

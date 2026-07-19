@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure Landlord Rating Website</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/register">Register</a>
+    <a href="/login">Login</a>
+    <a href="/submit-review">Submit Review</a>
+    <a href="/reviews">View Reviews</a>
+  </nav>
+
+  <main>
+    <h1>Secure Landlord Rating Website</h1>
+
+    <p>
+      This website allows renters to create accounts, log in,
+      and share landlord and rental experiences.
+    </p>
+
+    <section>
+      <h2>Security Features</h2>
+
+      <ul>
+        <li>Passwords are hashed with bcrypt.</li>
+        <li>Database queries use parameterized values.</li>
+        <li>User input is validated on the server.</li>
+        <li>Only authenticated users can submit reviews.</li>
+        <li>User-generated output is escaped to reduce XSS risk.</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>
