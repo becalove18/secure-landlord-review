@@ -238,43 +238,78 @@ app.get("/reviews", async (req, res) => {
 
     const reviewCards = result.rows
       .map((review) => {
+        const rating = Number(review.rating);
+
+        const stars =
+          "★".repeat(rating) +
+          "☆".repeat(5 - rating);
+
         return `
-          <section class="review-card">
-            <h2>${escapeHtml(review.landlord_name)}</h2>
+          <article
+            class="review-card"
+            data-rating="${rating}"
+            data-search="${escapeHtml(
+              `${review.landlord_name} ${review.property_address} ${review.review_text} ${review.username}`
+            ).toLowerCase()}"
+          >
+            <div class="review-card-header">
+              <div>
+                <p class="review-label">Landlord</p>
 
-            <p>
-              <strong>Property:</strong>
-              ${escapeHtml(review.property_address)}
-            </p>
+                <h2>
+                  ${escapeHtml(review.landlord_name)}
+                </h2>
+              </div>
 
-            <p>
-              <strong>Rating:</strong>
-              ${escapeHtml(review.rating)} out of 5
-            </p>
+              <div
+                class="star-rating"
+                aria-label="${rating} out of 5 stars"
+              >
+                ${stars}
+              </div>
+            </div>
 
-            <p>
-              <strong>Review:</strong>
+            <div class="property-address">
+              <span class="property-icon">⌂</span>
+
+              <span>
+                ${escapeHtml(review.property_address)}
+              </span>
+            </div>
+
+            <p class="review-text">
               ${escapeHtml(review.review_text)}
             </p>
 
-            <p>
-              <strong>Posted by:</strong>
-              ${escapeHtml(review.username)}
-            </p>
+            <div class="review-footer">
+              <span>
+                Posted by
+                <strong>
+                  ${escapeHtml(review.username)}
+                </strong>
+              </span>
 
-            <p>
-              <strong>Date:</strong>
-              ${escapeHtml(
-                new Date(review.created_at).toLocaleString()
-              )}
-            </p>
-          </section>
+              <span>
+                ${escapeHtml(
+                  new Date(review.created_at).toLocaleDateString(
+                    "en-US",
+                    {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    }
+                  )
+                )}
+              </span>
+            </div>
+          </article>
         `;
       })
       .join("");
 
     res.send(`
       <!DOCTYPE html>
+
       <html lang="en">
       <head>
         <meta charset="UTF-8">
@@ -290,22 +325,214 @@ app.get("/reviews", async (req, res) => {
       </head>
 
       <body>
-        <nav>
-          <a href="/">Home</a>
-          <a href="/register">Register</a>
-          <a href="/login">Login</a>
-          <a href="/submit-review">Submit Review</a>
-          <a href="/logout">Logout</a>
+        <nav class="site-nav">
+          <a class="site-logo" href="/">
+            RentReview
+          </a>
+
+          <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/reviews">Reviews</a>
+            <a href="/submit-review">Submit Review</a>
+            <a href="/register">Register</a>
+            <a href="/login">Login</a>
+            <a class="logout-link" href="/logout">Logout</a>
+          </div>
         </nav>
 
-        <main>
-          <h1>Landlord Reviews</h1>
+        <header class="reviews-hero">
+          <div class="hero-content">
+            <p class="eyebrow">
+              RENTAL TRANSPARENCY
+            </p>
 
-          ${
-            reviewCards ||
-            "<p>No reviews have been submitted yet.</p>"
-          }
+            <h1>
+              Find a landlord you can trust.
+            </h1>
+
+            <p class="hero-description">
+              Read rental experiences from other tenants and
+              make a more informed housing decision.
+            </p>
+          </div>
+        </header>
+
+        <main class="reviews-page">
+          <section class="review-controls">
+            <div class="search-field">
+              <label for="review-search">
+                Search reviews
+              </label>
+
+              <input
+                id="review-search"
+                type="search"
+                placeholder="Search landlord, property, or review..."
+              >
+            </div>
+
+            <div class="filter-field">
+              <label for="rating-filter">
+                Minimum rating
+              </label>
+
+              <select id="rating-filter">
+                <option value="0">All ratings</option>
+                <option value="5">5 stars</option>
+                <option value="4">4 stars and up</option>
+                <option value="3">3 stars and up</option>
+                <option value="2">2 stars and up</option>
+                <option value="1">1 star and up</option>
+              </select>
+            </div>
+
+            <button
+              class="clear-filters-button"
+              id="clear-filters"
+              type="button"
+            >
+              Clear filters
+            </button>
+          </section>
+
+          <section class="reviews-heading">
+            <div>
+              <p class="section-label">
+                COMMUNITY REVIEWS
+              </p>
+
+              <h2>Recent landlord reviews</h2>
+            </div>
+
+            <p id="review-count" class="review-count"></p>
+          </section>
+
+          <section class="reviews-grid" id="reviews-grid">
+            ${
+              reviewCards ||
+              `
+                <div class="empty-state">
+                  <h2>No reviews yet</h2>
+
+                  <p>
+                    Be the first person to share a rental
+                    experience.
+                  </p>
+
+                  <a
+                    class="primary-button"
+                    href="/submit-review"
+                  >
+                    Submit a review
+                  </a>
+                </div>
+              `
+            }
+          </section>
+
+          <section
+            class="no-results"
+            id="no-results"
+            hidden
+          >
+            <h2>No matching reviews</h2>
+
+            <p>
+              Try changing your search term or rating filter.
+            </p>
+          </section>
         </main>
+
+        <footer class="site-footer">
+          <p>
+            RentReview helps renters make informed housing
+            decisions.
+          </p>
+        </footer>
+
+        <script>
+          const searchInput =
+            document.getElementById("review-search");
+
+          const ratingFilter =
+            document.getElementById("rating-filter");
+
+          const clearFiltersButton =
+            document.getElementById("clear-filters");
+
+          const reviewCards =
+            document.querySelectorAll(".review-card");
+
+          const reviewCount =
+            document.getElementById("review-count");
+
+          const noResults =
+            document.getElementById("no-results");
+
+          function filterReviews() {
+            const searchValue =
+              searchInput.value.trim().toLowerCase();
+
+            const minimumRating =
+              Number(ratingFilter.value);
+
+            let visibleCount = 0;
+
+            reviewCards.forEach((card) => {
+              const searchableText =
+                card.dataset.search;
+
+              const rating =
+                Number(card.dataset.rating);
+
+              const matchesSearch =
+                searchableText.includes(searchValue);
+
+              const matchesRating =
+                rating >= minimumRating;
+
+              const shouldShow =
+                matchesSearch && matchesRating;
+
+              card.hidden = !shouldShow;
+
+              if (shouldShow) {
+                visibleCount++;
+              }
+            });
+
+            reviewCount.textContent =
+              visibleCount === 1
+                ? "1 review"
+                : visibleCount + " reviews";
+
+            noResults.hidden =
+              visibleCount !== 0 ||
+              reviewCards.length === 0;
+          }
+
+          clearFiltersButton.addEventListener(
+            "click",
+            () => {
+              searchInput.value = "";
+              ratingFilter.value = "0";
+              filterReviews();
+              searchInput.focus();
+            }
+          );
+
+          searchInput.addEventListener(
+            "input",
+            filterReviews
+          );
+
+          ratingFilter.addEventListener(
+            "change",
+            filterReviews
+          );
+
+          filterReviews();
+        </script>
       </body>
       </html>
     `);

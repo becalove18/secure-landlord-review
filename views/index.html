@@ -2,38 +2,164 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>Secure Landlord Rating Website</title>
+
   <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
-  <nav>
-    <a href="/">Home</a>
-    <a href="/register">Register</a>
-    <a href="/login">Login</a>
-    <a href="/submit-review">Submit Review</a>
-    <a href="/reviews">View Reviews</a>
+  <nav class="site-nav">
+    <a class="site-logo" href="/">
+      RentReview
+    </a>
+
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/register">Register</a>
+      <a href="/login">Login</a>
+      <a href="/submit-review">Submit Review</a>
+      <a href="/reviews">View Reviews</a>
+    </div>
   </nav>
 
-  <main>
-    <h1>Secure Landlord Rating Website</h1>
+  <header class="home-hero">
+    <div class="home-hero-content">
+      <p class="eyebrow">
+        SECURE RENTAL REVIEWS
+      </p>
 
-    <p>
-      This website allows renters to create accounts, log in,
-      and share landlord and rental experiences.
-    </p>
+      <h1>
+        Make smarter rental decisions.
+      </h1>
 
-    <section>
-      <h2>Security Features</h2>
+      <p class="home-hero-description">
+        Read verified reviews, share your rental experience,
+        and help other renters make informed housing decisions.
+      </p>
 
-      <ul>
-        <li>Passwords are hashed with bcrypt.</li>
-        <li>Database queries use parameterized values.</li>
-        <li>User input is validated on the server.</li>
-        <li>Only authenticated users can submit reviews.</li>
-        <li>User-generated output is escaped to reduce XSS risk.</li>
-      </ul>
+      <div class="hero-buttons">
+        <a class="primary-button" href="/reviews">
+          Browse Reviews
+        </a>
+
+        <a class="secondary-button" href="/submit-review">
+          Submit a Review
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="home-page">
+    <section class="intro-section">
+      <p class="section-label">
+        BUILT WITH SECURITY IN MIND
+      </p>
+
+      <h2>
+        A safer way to share rental experiences
+      </h2>
+
+      <p class="section-description">
+        RentReview protects user accounts and submitted reviews
+        using secure web-development practices.
+      </p>
+    </section>
+
+    <section class="features-grid">
+      <article class="feature-card">
+        <div class="feature-icon">
+          01
+        </div>
+
+        <h3>Secure Passwords</h3>
+
+        <p>
+          Passwords are hashed with bcrypt before they are stored
+          in the database.
+        </p>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-icon">
+          02
+        </div>
+
+        <h3>Protected Queries</h3>
+
+        <p>
+          Database queries use parameterized values to reduce
+          SQL injection risk.
+        </p>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-icon">
+          03
+        </div>
+
+        <h3>Input Validation</h3>
+
+        <p>
+          User input is checked and validated on the server before
+          it is processed.
+        </p>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-icon">
+          04
+        </div>
+
+        <h3>Authenticated Reviews</h3>
+
+        <p>
+          Only signed-in users are allowed to submit landlord
+          reviews.
+        </p>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-icon">
+          05
+        </div>
+
+        <h3>XSS Protection</h3>
+
+        <p>
+          User-generated content is escaped before being displayed
+          on the website.
+        </p>
+      </article>
+
+      <article class="feature-card feature-card-highlight">
+        <div class="feature-icon">
+          06
+        </div>
+
+        <h3>Share Your Experience</h3>
+
+        <p>
+          Help other renters by sharing an honest and informative
+          landlord review.
+        </p>
+
+        <a class="text-link" href="/register">
+          Create an account →
+        </a>
+      </article>
     </section>
   </main>
+
+  <footer class="site-footer">
+    <p>
+      RentReview helps renters make informed housing decisions.
+    </p>
+  </footer>
 </body>
 </html>
