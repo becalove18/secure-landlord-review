@@ -4,7 +4,7 @@ A secure landlord review website developed as a cybersecurity senior capstone pr
 
 ## 🌐 Live Website
 
-https://secure-landlord-review.onrender.com
+[Open the live RentReview website](https://secure-landlord-review.onrender.com)
 
 ---
 
@@ -70,11 +70,14 @@ RentReview is a secure, responsive web application that allows tenants to share 
 
 ## 🏗 Project Architecture
 
-The application follows a modular Express.js architecture using reusable middleware and EJS templates.
+The application follows a modular Express.js architecture that separates server configuration, route handling, reusable middleware, database access, static assets, and EJS templates.
+
+Major components include:
 
 Major components include:
 
 - Express.js server
+- Modular Express route files
 - PostgreSQL database
 - EJS templating engine
 - Authentication middleware
@@ -112,10 +115,16 @@ SESSION_SECRET=
 NODE_ENV=development
 ```
 
-Run the application:
+Run the application normally:
 
 ```bash
 npm start
+```
+
+Run the application in development mode (automatically restarts the server when you save changes):
+
+```bash
+npm run dev
 ```
 
 Open:
@@ -136,6 +145,12 @@ secure-landlord-review/
 │   ├── ownership.js
 │   └── validation.js
 │
+├── routes/
+│   ├── authRoutes.js
+│   ├── pageRoutes.js
+│   ├── profileRoutes.js
+│   └── reviewRoutes.js
+│
 ├── public/
 │   ├── script.js
 │   └── style.css
@@ -145,7 +160,6 @@ secure-landlord-review/
 │   │   ├── footer.ejs
 │   │   ├── head.ejs
 │   │   └── navigation.ejs
-│   │
 │   ├── edit-review.ejs
 │   ├── index.ejs
 │   ├── login.ejs
@@ -154,11 +168,10 @@ secure-landlord-review/
 │   ├── reviews.ejs
 │   └── submit-review.ejs
 │
-├── .env
 ├── .gitignore
 ├── db.js
-├── package.json
 ├── package-lock.json
+├── package.json
 ├── README.md
 └── server.js
 ```
@@ -172,17 +185,22 @@ secure-landlord-review/
   - `validation.js` contains reusable validation rules for registration, login, and reviews.
   - `ownership.js` ensures users can only edit or delete their own reviews.
 - `public/` contains browser-accessible CSS and JavaScript files.
+- `routes/` contains the Express route modules for page, authentication, profile, and review requests.
+  - `pageRoutes.js` handles the home page.
+  - `authRoutes.js` handles registration, login, logout, and authentication-status requests.
+  - `profileRoutes.js` handles the protected user profile page.
+  - `reviewRoutes.js` handles viewing, submitting, editing, and deleting reviews.
 - `views/` contains EJS page templates.
 - `views/partials/` contains reusable page sections such as the document head, navigation bar, and footer.
 - `db.js` configures the PostgreSQL database connection.
-- `server.js` configures the Express application, middleware, and routes.
+- `server.js` configures Express, security middleware, sessions, static files, route modules, and application startup.
 - `.env` stores private environment variables and is excluded from Git.
 
 ---
 
-## 🧪 Security Testing
+## 🧪 Security Testing Plan
 
-The application was tested against common web application attacks and security risks, including:
+The application will be tested against common web application attacks and security risks, including:
 
 - SQL Injection (SQLi)
 - Cross-Site Scripting (XSS)
@@ -190,9 +208,19 @@ The application was tested against common web application attacks and security r
 - Authentication bypass attempts
 - Review ownership enforcement
 - Invalid form input validation
-- Session management testing
+- Session management
 
-These protections are implemented using secure coding practices, parameterized SQL queries, reusable middleware, server-side validation, and session-based authentication.
+Testing will include crafted SQL injection and XSS payloads, protected-route access attempts, invalid form submissions, and attempts to edit or delete reviews belonging to another user.
+
+---
+
+### Testing Tools and Methods
+
+- Manual browser testing
+- Chrome DevTools
+- Crafted SQL injection and XSS payloads
+- PostgreSQL database verification
+- Multiple test user accounts for authorization testing
 
 ---
 
@@ -203,6 +231,7 @@ These protections are implemented using secure coding practices, parameterized S
 - Pagination
 - Review moderation
 - Review voting
+
 ---
 
 ## 👩‍💻 Author
