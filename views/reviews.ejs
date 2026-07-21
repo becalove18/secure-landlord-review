@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("partials/head", {
+    pageTitle: "Landlord Reviews | RentReview"
+  }) %>
+</head>
+
+<body>
+  <%- include("partials/navigation", {
+    isLoggedIn
+  }) %>
+
+  <header class="reviews-hero">
+    <div class="hero-content">
+      <p class="eyebrow">
+        RENTAL TRANSPARENCY
+      </p>
+
+      <h1>
+        Find a landlord you can trust.
+      </h1>
+
+      <p class="hero-description">
+        Read rental experiences from other tenants and
+        make a more informed housing decision.
+      </p>
+    </div>
+  </header>
+
+  <main class="reviews-page">
+    <section class="review-controls">
+      <div class="search-field">
+        <label for="review-search">
+          Search reviews
+        </label>
+
+        <input
+          id="review-search"
+          type="search"
+          placeholder="Search landlord, property, or review..."
+        >
+      </div>
+
+      <div class="filter-field">
+        <label for="rating-filter">
+          Minimum rating
+        </label>
+
+        <select id="rating-filter">
+          <option value="0">All ratings</option>
+          <option value="5">5 stars</option>
+          <option value="4">4 stars and up</option>
+          <option value="3">3 stars and up</option>
+          <option value="2">2 stars and up</option>
+          <option value="1">1 star and up</option>
+        </select>
+      </div>
+
+      <button
+        class="secondary-button clear-filters-button"
+        id="clear-filters"
+        type="button"
+      >
+        Clear filters
+      </button>
+    </section>
+
+    <section class="reviews-heading">
+      <div>
+        <p class="section-label">
+          COMMUNITY REVIEWS
+        </p>
+
+        <h2>
+          Recent landlord reviews
+        </h2>
+      </div>
+
+      <p
+        id="review-count"
+        class="review-count"
+      ></p>
+    </section>
+
+    <section
+      class="reviews-grid"
+      id="reviews-grid"
+    >
+      <% if (reviews.length === 0) { %>
+        <div class="empty-state">
+          <h2>
+            No reviews yet
+          </h2>
+
+          <p>
+            Be the first person to share a rental experience.
+          </p>
+
+          <% if (isLoggedIn) { %>
+            <a
+              class="primary-button"
+              href="/submit-review"
+            >
+              Submit a Review
+            </a>
+          <% } else { %>
+            <a
+              class="primary-button"
+              href="/register"
+            >
+              Create an Account
+            </a>
+          <% } %>
+        </div>
+      <% } else { %>
+        <% reviews.forEach((review) => { %>
+          <% const rating = Number(review.rating); %>
+
+          <article
+            class="review-card"
+            data-rating="<%= rating %>"
+            data-search="<%= review.searchableText %>"
+          >
+            <div class="review-card-header">
+              <div>
+                <p class="review-label">
+                  Landlord
+                </p>
+
+                <h2>
+                  <%= review.landlord_name %>
+                </h2>
+              </div>
+
+              <div
+                class="star-rating"
+                aria-label="<%= rating %> out of 5 stars"
+              >
+                <%= "★".repeat(rating) %><%= "☆".repeat(5 - rating) %>
+              </div>
+            </div>
+
+            <div class="property-address">
+              <span
+                class="property-icon"
+                aria-hidden="true"
+              >
+                ⌂
+              </span>
+
+              <span>
+                <%= review.property_address %>
+              </span>
+            </div>
+
+            <p class="review-text">
+              <%= review.review_text %>
+            </p>
+
+            <% if (review.userOwnsReview) { %>
+              <div class="review-actions">
+                <a
+                  class="secondary-button review-action-button"
+                  href="/reviews/<%= review.review_id %>/edit"
+                >
+                  Edit Review
+                </a>
+
+                <form
+                  action="/reviews/<%= review.review_id %>/delete"
+                  method="POST"
+                  class="delete-review-form"
+                >
+                  <button
+                    class="danger-button review-action-button"
+                    type="submit"
+                  >
+                    Delete Review
+                  </button>
+                </form>
+              </div>
+            <% } %>
+
+            <div class="review-footer">
+              <span>
+                Posted by
+                <strong>
+                  <%= review.username %>
+                </strong>
+              </span>
+
+              <span>
+                <%= new Date(review.created_at).toLocaleDateString(
+                  "en-US",
+                  {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }
+                ) %>
+              </span>
+            </div>
+          </article>
+        <% }) %>
+      <% } %>
+    </section>
+
+    <section
+      class="no-results"
+      id="no-results"
+      hidden
+    >
+      <h2>
+        No matching reviews
+      </h2>
+
+      <p>
+        Try changing your search term or rating filter.
+      </p>
+    </section>
+  </main>
+
+  <%- include("partials/footer") %>
+
+  <script src="/script.js" defer></script>
+</body>
+</html>

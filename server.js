@@ -44,15 +44,6 @@ app.use(
   })
 );
 
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
 function requireLogin(req, res, next) {
   if (!req.session.userId) {
     return res.redirect("/login");
@@ -642,324 +633,52 @@ app.get("/profile", requireLogin, async (req, res) => {
 app.get("/reviews", async (req, res) => {
   try {
     const result = await pool.query(`
-        SELECT
-            reviews.id AS review_id,
-            reviews.user_id,
-            landlords.id AS landlord_id,
-            landlords.landlord_name,
-            landlords.property_address,
-            reviews.rating,
-            reviews.review_text,
-            reviews.created_at,
-            users.username
-        FROM reviews
-        INNER JOIN landlords
-            ON reviews.landlord_id = landlords.id
-        INNER JOIN users
-            ON reviews.user_id = users.id
-        ORDER BY reviews.created_at DESC
-        `);
+      SELECT
+        reviews.id AS review_id,
+        reviews.user_id,
+        landlords.id AS landlord_id,
+        landlords.landlord_name,
+        landlords.property_address,
+        reviews.rating,
+        reviews.review_text,
+        reviews.created_at,
+        users.username
+      FROM reviews
+      INNER JOIN landlords
+        ON reviews.landlord_id = landlords.id
+      INNER JOIN users
+        ON reviews.user_id = users.id
+      ORDER BY reviews.created_at DESC
+    `);
+
     const isLoggedIn = Boolean(req.session.userId);
 
-    const accountLinks = isLoggedIn
-      ? `
-      
-        <span id="logged-in-links">
-          <a href="/profile">My Profile</a>
-          <a href="/submit-review">Submit Review</a>
+    const reviews = result.rows.map((review) => {
+      const userOwnsReview =
+        isLoggedIn &&
+        Number(review.user_id) === Number(req.session.userId);
 
-          <button
-            id="logout-button"
-            class="nav-button"
-            type="button"
-          >
-            Logout
-          </button>
-        </span>
-      `
-      : `
-        <span id="logged-out-links">
-          <a href="/register">Register</a>
-          <a href="/login">Login</a>
-        </span>
-      `;
+      const searchableText =
+        `${review.landlord_name} ${review.property_address} ${review.review_text} ${review.username}`
+          .toLowerCase();
 
-    const reviewCards = result.rows
-      .map((review) => {
-        const rating = Number(review.rating);
+      return {
+        ...review,
+        userOwnsReview,
+        searchableText,
+      };
+    });
 
-        const stars =
-          "★".repeat(rating) +
-          "☆".repeat(5 - rating);
-
-        const userOwnsReview =
-            isLoggedIn &&
-            Number(review.user_id) === Number(req.session.userId);
-
-        const searchableText = escapeHtml(
-          `${review.landlord_name} ${review.property_address} ${review.review_text} ${review.username}`
-        ).toLowerCase();
-
-        return `
-          <article
-            class="review-card"
-            data-rating="${rating}"
-            data-search="${searchableText}"
-          >
-            <div class="review-card-header">
-              <div>
-                <p class="review-label">
-                  Landlord
-                </p>
-
-                <h2>
-                  ${escapeHtml(review.landlord_name)}
-                </h2>
-              </div>
-
-              <div
-                class="star-rating"
-                aria-label="${rating} out of 5 stars"
-              >
-                ${stars}
-              </div>
-            </div>
-
-            <div class="property-address">
-              <span class="property-icon" aria-hidden="true">
-                ⌂
-              </span>
-
-              <span>
-                ${escapeHtml(review.property_address)}
-              </span>
-            </div>
-
-            <p class="review-text">${escapeHtml(review.review_text)}</p>
-
-            ${
-            userOwnsReview
-                ? `
-                <div class="review-actions">
-                    <a
-                    class="secondary-button review-action-button"
-                    href="/reviews/${review.review_id}/edit"
-                    >
-                    Edit Review
-                    </a>
-
-                    <form
-                    action="/reviews/${review.review_id}/delete"
-                    method="POST"
-                    class="delete-review-form"
-                    >
-                    <button
-                        class="danger-button review-action-button"
-                        type="submit"
-                    >
-                        Delete Review
-                    </button>
-                    </form>
-                </div>
-                `
-                : ""
-            }
-
-            <div class="review-footer">
-              <span>
-                Posted by
-                <strong>
-                  ${escapeHtml(review.username)}
-                </strong>
-              </span>
-
-              <span>
-                ${escapeHtml(
-                  new Date(review.created_at).toLocaleDateString(
-                    "en-US",
-                    {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    }
-                  )
-                )}
-              </span>
-            </div>
-          </article>
-        `;
-      })
-      .join("");
-
-    return res.send(`
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0"
-        >
-
-        <title>Landlord Reviews | RentReview</title>
-
-        <link
-          rel="stylesheet"
-          href="/style.css"
-        >
-      </head>
-
-      <body>
-        <nav class="site-nav">
-          <a class="site-logo" href="/">
-            <span class="logo-icon" aria-hidden="true">⌂</span>
-            <span>RentReview</span>
-          </a>
-
-          <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/reviews">Reviews</a>
-            ${accountLinks}
-          </div>
-        </nav>
-
-        <header class="reviews-hero">
-          <div class="hero-content">
-            <p class="eyebrow">
-              RENTAL TRANSPARENCY
-            </p>
-
-            <h1>
-              Find a landlord you can trust.
-            </h1>
-
-            <p class="hero-description">
-              Read rental experiences from other tenants and
-              make a more informed housing decision.
-            </p>
-          </div>
-        </header>
-
-        <main class="reviews-page">
-          <section class="review-controls">
-            <div class="search-field">
-              <label for="review-search">
-                Search reviews
-              </label>
-
-              <input
-                id="review-search"
-                type="search"
-                placeholder="Search landlord, property, or review..."
-              >
-            </div>
-
-            <div class="filter-field">
-              <label for="rating-filter">
-                Minimum rating
-              </label>
-
-              <select id="rating-filter">
-                <option value="0">All ratings</option>
-                <option value="5">5 stars</option>
-                <option value="4">4 stars and up</option>
-                <option value="3">3 stars and up</option>
-                <option value="2">2 stars and up</option>
-                <option value="1">1 star and up</option>
-              </select>
-            </div>
-
-            <button
-              class="secondary-button clear-filters-button"
-              id="clear-filters"
-              type="button"
-            >
-              Clear filters
-            </button>
-          </section>
-
-          <section class="reviews-heading">
-            <div>
-              <p class="section-label">
-                COMMUNITY REVIEWS
-              </p>
-
-              <h2>
-                Recent landlord reviews
-              </h2>
-            </div>
-
-            <p
-              id="review-count"
-              class="review-count"
-            ></p>
-          </section>
-
-          <section
-            class="reviews-grid"
-            id="reviews-grid"
-          >
-            ${
-              reviewCards ||
-              `
-                <div class="empty-state">
-                  <h2>No reviews yet</h2>
-
-                  <p>
-                    Be the first person to share a rental experience.
-                  </p>
-
-                  ${
-                    isLoggedIn
-                      ? `
-                        <a
-                          class="primary-button"
-                          href="/submit-review"
-                        >
-                          Submit a Review
-                        </a>
-                      `
-                      : `
-                        <a
-                          class="primary-button"
-                          href="/register"
-                        >
-                          Create an Account
-                        </a>
-                      `
-                  }
-                </div>
-              `
-            }
-          </section>
-
-          <section
-            class="no-results"
-            id="no-results"
-            hidden
-          >
-            <h2>No matching reviews</h2>
-
-            <p>
-              Try changing your search term or rating filter.
-            </p>
-          </section>
-        </main>
-
-        <footer class="site-footer">
-          <p>
-            RentReview helps renters make informed housing decisions.
-          </p>
-        </footer>
-
-        <script src="/script.js" defer></script>
-      </body>
-      </html>
-    `);
+    return res.render("reviews", {
+      isLoggedIn,
+      reviews,
+    });
   } catch (error) {
     console.error("Review display error:", error);
-    return res.status(500).send("The reviews could not be loaded.");
+
+    return res.status(500).send(
+      "The reviews could not be loaded."
+    );
   }
 });
 

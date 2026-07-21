@@ -121,15 +121,13 @@ secure-landlord-review/
 │   ├── login.ejs
 │   ├── profile.ejs
 │   ├── register.ejs
+│   ├── reviews.ejs
 │   └── submit-review.ejs
 │
-├── .env
-├── .gitignore
 ├── db.js
+├── server.js
 ├── package.json
-├── package-lock.json
-├── README.md
-└── server.js
+└── README.md
 ```
 
 ---
