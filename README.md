@@ -111,11 +111,15 @@ secure-landlord-review/
 │   ├── script.js
 │   └── style.css
 │
-├── views/
-│   ├── index.html
-│   ├── login.html
-│   ├── register.html
-│   └── submit-review.html
+views/
+├── partials/
+│   ├── footer.ejs
+│   ├── head.ejs
+│   └── navigation.ejs
+├── index.ejs
+├── login.ejs
+├── register.ejs
+└── submit-review.ejs
 │
 ├── db.js
 ├── server.js

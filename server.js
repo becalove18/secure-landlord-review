@@ -77,7 +77,13 @@ app.get("/", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "register.html"));
+  if (req.session.userId) {
+    return res.redirect("/profile");
+  }
+
+  return res.render("register", {
+    isLoggedIn: false,
+  });
 });
 
 app.post(
@@ -139,7 +145,13 @@ app.post(
 );
 
 app.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "login.html"));
+  if (req.session.userId) {
+    return res.redirect("/profile");
+  }
+
+  return res.render("login", {
+    isLoggedIn: false,
+  });
 });
 
 app.post(
@@ -201,7 +213,7 @@ app.post(
               .send("Login succeeded, but the session could not be saved.");
           }
 
-          return res.redirect("/submit-review");
+          return res.redirect("/profile");
         });
       });
     } catch (error) {
@@ -234,7 +246,9 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/submit-review", requireLogin, (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "submit-review.html"));
+  res.render("submit-review", {
+    isLoggedIn: true,
+  });
 });
 
 app.post(
