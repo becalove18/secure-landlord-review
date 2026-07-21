@@ -19,6 +19,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
 app.use(
   session({
     store: new pgSession({
@@ -35,7 +39,7 @@ app.use(
 
     cookie: {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 1000 * 60 * 60,
     },
@@ -210,7 +214,7 @@ app.get("/logout", (req, res) => {
   req.session.destroy((error) => {
     if (error) {
       console.error("Logout error:", error);
-      return res.status(500).send("The logout request failed.");
+      return res.status(500).send("Unable to log out.");
     }
 
     res.clearCookie("connect.sid");
@@ -235,6 +239,18 @@ app.get("/reviews", async (req, res) => {
         ON reviews.user_id = users.id
       ORDER BY reviews.created_at DESC
     `);
+
+    const isLoggedIn = Boolean(req.session.userId);
+
+    const accountLinks = isLoggedIn
+    ? `
+      <a href="/submit-review">Submit Review</a>
+      <a href="/logout" class="nav-button">Logout</a>
+    `
+    : `
+      <a href="/login">Login</a>
+      <a href="/register" class="nav-button">Register</a>
+    `;
 
     const reviewCards = result.rows
       .map((review) => {
@@ -333,10 +349,7 @@ app.get("/reviews", async (req, res) => {
           <div class="nav-links">
             <a href="/">Home</a>
             <a href="/reviews">Reviews</a>
-            <a href="/submit-review">Submit Review</a>
-            <a href="/register">Register</a>
-            <a href="/login">Login</a>
-            <a class="logout-link" href="/logout">Logout</a>
+            ${accountLinks}
           </div>
         </nav>
 
@@ -450,8 +463,8 @@ app.get("/reviews", async (req, res) => {
           </p>
         </footer>
 
-        <script src="/script.js"></script>
-        
+        <script src="/script.js" defer></script>
+
       </body>
       </html>
     `);
@@ -468,19 +481,6 @@ app.get("/", (req, res) => {
   res.sendFile(
     path.join(__dirname, "views", "index.html")
   );
-});
-
-app.get("/database-test", async (req, res) => {
-  try {
-    const result = await pool.query("SELECT NOW()");
-
-    res.send(
-      `Database connected successfully. PostgreSQL time: ${result.rows[0].now}`
-    );
-  } catch (error) {
-    console.error("Database connection failed:", error);
-    res.status(500).send("Database connection failed.");
-  }
 });
 
 app.get("/register", (req, res) => {
@@ -548,5 +548,5 @@ app.get("/login", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
