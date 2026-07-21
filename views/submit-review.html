@@ -2,62 +2,168 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Submit Review</title>
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Submit a Review | RentReview</title>
+
   <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
-  <nav>
-    <a href="/">Home</a>
-    <a href="/reviews">View Reviews</a>
-    <a href="/logout">Logout</a>
+  <nav class="site-nav">
+    <a class="site-logo" href="/">
+      <span class="logo-icon" aria-hidden="true">⌂</span>
+      <span>RentReview</span>
+    </a>
+
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/reviews">Reviews</a>
+
+      <span id="logged-out-links" hidden>
+        <a href="/register">Register</a>
+        <a href="/login">Login</a>
+      </span>
+
+      <span id="logged-in-links">
+        <a href="/submit-review">Submit Review</a>
+
+        <button
+          id="logout-button"
+          class="nav-button"
+          type="button"
+        >
+          Logout
+        </button>
+      </span>
+    </div>
   </nav>
 
-  <main>
-    <h1>Submit a Landlord Review</h1>
+  <main class="submit-review-page">
+    <section class="submit-review-card">
+      <div class="submit-review-heading">
+        <p class="section-label">
+          SHARE YOUR EXPERIENCE
+        </p>
 
-    <form action="/submit-review" method="POST">
-      <label for="landlord_name">Landlord Name</label>
-      <input
-        id="landlord_name"
-        name="landlord_name"
-        type="text"
-        minlength="2"
-        maxlength="100"
-        required
+        <h1>
+          Submit a Landlord Review
+        </h1>
+
+        <p class="submit-review-description">
+          Help other renters make informed housing decisions by
+          sharing an honest review of your landlord and property.
+        </p>
+      </div>
+
+      <form
+        class="submit-review-form"
+        action="/submit-review"
+        method="POST"
       >
+        <div class="form-group">
+          <label for="landlord_name">
+            Landlord Name
+          </label>
 
-      <label for="property_address">Property Address</label>
-      <input
-        id="property_address"
-        name="property_address"
-        type="text"
-        minlength="5"
-        maxlength="200"
-        required
-      >
+          <input
+            id="landlord_name"
+            name="landlord_name"
+            type="text"
+            minlength="2"
+            maxlength="100"
+            required
+          >
+        </div>
 
-      <label for="rating">Rating</label>
-      <select id="rating" name="rating" required>
-        <option value="">Choose a rating</option>
-        <option value="1">1 - Very Poor</option>
-        <option value="2">2 - Poor</option>
-        <option value="3">3 - Average</option>
-        <option value="4">4 - Good</option>
-        <option value="5">5 - Excellent</option>
-      </select>
+        <div class="form-group">
+          <label for="property_address">
+            Property Address
+          </label>
 
-      <label for="review_text">Review</label>
-      <textarea
-        id="review_text"
-        name="review_text"
-        minlength="10"
-        maxlength="1000"
-        required
-      ></textarea>
+          <input
+            id="property_address"
+            name="property_address"
+            type="text"
+            minlength="5"
+            maxlength="200"
+            autocomplete="street-address"
+            required
+          >
+        </div>
 
-      <button type="submit">Submit Review</button>
-    </form>
+        <div class="form-group">
+          <label for="rating">
+            Rating
+          </label>
+
+          <select
+            id="rating"
+            name="rating"
+            required
+          >
+            <option value="">
+              Choose a rating
+            </option>
+
+            <option value="1">
+              1 - Very Poor
+            </option>
+
+            <option value="2">
+              2 - Poor
+            </option>
+
+            <option value="3">
+              3 - Average
+            </option>
+
+            <option value="4">
+              4 - Good
+            </option>
+
+            <option value="5">
+              5 - Excellent
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="review_text">
+            Review
+          </label>
+
+          <textarea
+            id="review_text"
+            name="review_text"
+            minlength="10"
+            maxlength="1000"
+            rows="7"
+            placeholder="Describe your experience with the landlord and property..."
+            required
+          ></textarea>
+        </div>
+
+        <button
+          class="primary-button submit-review-button"
+          type="submit"
+        >
+          Submit Review
+        </button>
+      </form>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <p>
+      RentReview helps renters make informed housing decisions.
+    </p>
+  </footer>
+
+  <script src="/script.js" defer></script>
 </body>
 </html>

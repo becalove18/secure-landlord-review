@@ -8,7 +8,7 @@
     content="width=device-width, initial-scale=1.0"
   >
 
-  <title>Secure Landlord Rating Website</title>
+  <title>RentReview | Secure Landlord Reviews</title>
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -16,12 +16,13 @@
 <body>
   <nav class="site-nav">
     <a class="site-logo" href="/">
-      RentReview
+      <span class="logo-icon" aria-hidden="true">⌂</span>
+      <span>RentReview</span>
     </a>
 
     <div class="nav-links">
       <a href="/">Home</a>
-      <a href="/reviews">View Reviews</a>
+      <a href="/reviews">Reviews</a>
 
       <span id="logged-out-links">
         <a href="/register">Register</a>
@@ -53,8 +54,8 @@
       </h1>
 
       <p class="home-hero-description">
-        Read verified reviews, share your rental experience,
-        and help other renters make informed housing decisions.
+        Read reviews, share your rental experience, and help
+        other renters make informed housing decisions.
       </p>
 
       <div class="hero-buttons">
@@ -64,7 +65,7 @@
 
         <a
           id="hero-submit-review"
-          class="secondary-button"
+          class="secondary-button secondary-button-light"
           href="/submit-review"
           hidden
         >
@@ -73,7 +74,7 @@
 
         <a
           id="hero-create-account"
-          class="secondary-button"
+          class="secondary-button secondary-button-light"
           href="/register"
         >
           Create an Account
@@ -100,9 +101,7 @@
 
     <section class="features-grid">
       <article class="feature-card">
-        <div class="feature-icon">
-          01
-        </div>
+        <div class="feature-icon">01</div>
 
         <h3>Secure Passwords</h3>
 
@@ -113,9 +112,7 @@
       </article>
 
       <article class="feature-card">
-        <div class="feature-icon">
-          02
-        </div>
+        <div class="feature-icon">02</div>
 
         <h3>Protected Queries</h3>
 
@@ -126,9 +123,7 @@
       </article>
 
       <article class="feature-card">
-        <div class="feature-icon">
-          03
-        </div>
+        <div class="feature-icon">03</div>
 
         <h3>Input Validation</h3>
 
@@ -139,9 +134,7 @@
       </article>
 
       <article class="feature-card">
-        <div class="feature-icon">
-          04
-        </div>
+        <div class="feature-icon">04</div>
 
         <h3>Authenticated Reviews</h3>
 
@@ -152,9 +145,7 @@
       </article>
 
       <article class="feature-card">
-        <div class="feature-icon">
-          05
-        </div>
+        <div class="feature-icon">05</div>
 
         <h3>XSS Protection</h3>
 
@@ -165,9 +156,7 @@
       </article>
 
       <article class="feature-card feature-card-highlight">
-        <div class="feature-icon">
-          06
-        </div>
+        <div class="feature-icon">06</div>
 
         <h3>Share Your Experience</h3>
 

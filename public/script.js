@@ -1,23 +1,30 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const loggedOutLinks = document.getElementById("logged-out-links");
-  const loggedInLinks = document.getElementById("logged-in-links");
-  const logoutButton = document.getElementById("logout-button");
+  const loggedOutLinks =
+    document.getElementById("logged-out-links");
 
-  const heroSubmitReview = document.getElementById("hero-submit-review");
-  const heroCreateAccount = document.getElementById("hero-create-account");
+  const loggedInLinks =
+    document.getElementById("logged-in-links");
 
-  const featureSubmitReview = document.getElementById("feature-submit-review");
-  const featureCreateAccount = document.getElementById("feature-create-account");
+  const logoutButton =
+    document.getElementById("logout-button");
+
+  const heroSubmitReview =
+    document.getElementById("hero-submit-review");
+
+  const heroCreateAccount =
+    document.getElementById("hero-create-account");
+
+  const featureSubmitReview =
+    document.getElementById("feature-submit-review");
+
+  const featureCreateAccount =
+    document.getElementById("feature-create-account");
 
   async function updateNavigation() {
-    if (!loggedOutLinks || !loggedInLinks) {
-      return;
-    }
-
     try {
       const response = await fetch("/auth-status", {
         credentials: "same-origin",
-        cache: "no-store"
+        cache: "no-store",
       });
 
       if (!response.ok) {
@@ -26,36 +33,55 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const data = await response.json();
 
-      if (data.loggedIn) {
-        loggedOutLinks.hidden = true;
-        loggedInLinks.hidden = false;
+      if (loggedOutLinks) {
+        loggedOutLinks.hidden = data.loggedIn;
+      }
 
-        if (heroSubmitReview) heroSubmitReview.hidden = false;
-        if (heroCreateAccount) heroCreateAccount.hidden = true;
+      if (loggedInLinks) {
+        loggedInLinks.hidden = !data.loggedIn;
+      }
 
-        if (featureSubmitReview) featureSubmitReview.hidden = false;
-        if (featureCreateAccount) featureCreateAccount.hidden = true;
-      } else {
-        loggedOutLinks.hidden = false;
-        loggedInLinks.hidden = true;
+      if (heroSubmitReview) {
+        heroSubmitReview.hidden = !data.loggedIn;
+      }
 
-        if (heroSubmitReview) heroSubmitReview.hidden = true;
-        if (heroCreateAccount) heroCreateAccount.hidden = false;
+      if (heroCreateAccount) {
+        heroCreateAccount.hidden = data.loggedIn;
+      }
 
-        if (featureSubmitReview) featureSubmitReview.hidden = true;
-        if (featureCreateAccount) featureCreateAccount.hidden = false;
+      if (featureSubmitReview) {
+        featureSubmitReview.hidden = !data.loggedIn;
+      }
+
+      if (featureCreateAccount) {
+        featureCreateAccount.hidden = data.loggedIn;
       }
     } catch (error) {
       console.error("Login status error:", error);
 
-      loggedOutLinks.hidden = false;
-      loggedInLinks.hidden = true;
+      if (loggedOutLinks) {
+        loggedOutLinks.hidden = false;
+      }
 
-      if (heroSubmitReview) heroSubmitReview.hidden = true;
-      if (heroCreateAccount) heroCreateAccount.hidden = false;
+      if (loggedInLinks) {
+        loggedInLinks.hidden = true;
+      }
 
-      if (featureSubmitReview) featureSubmitReview.hidden = true;
-      if (featureCreateAccount) featureCreateAccount.hidden = false;
+      if (heroSubmitReview) {
+        heroSubmitReview.hidden = true;
+      }
+
+      if (heroCreateAccount) {
+        heroCreateAccount.hidden = false;
+      }
+
+      if (featureSubmitReview) {
+        featureSubmitReview.hidden = true;
+      }
+
+      if (featureCreateAccount) {
+        featureCreateAccount.hidden = false;
+      }
     }
   }
 
@@ -64,7 +90,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       try {
         const response = await fetch("/logout", {
           method: "POST",
-          credentials: "same-origin"
+          credentials: "same-origin",
         });
 
         if (!response.ok) {
@@ -81,12 +107,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   await updateNavigation();
 
-  const searchInput = document.getElementById("review-search");
-  const ratingFilter = document.getElementById("rating-filter");
-  const clearFiltersButton = document.getElementById("clear-filters");
-  const reviewCards = document.querySelectorAll(".review-card");
-  const reviewCount = document.getElementById("review-count");
-  const noResults = document.getElementById("no-results");
+  const searchInput =
+    document.getElementById("review-search");
+
+  const ratingFilter =
+    document.getElementById("rating-filter");
+
+  const clearFiltersButton =
+    document.getElementById("clear-filters");
+
+  const reviewCards =
+    document.querySelectorAll(".review-card");
+
+  const reviewCount =
+    document.getElementById("review-count");
+
+  const noResults =
+    document.getElementById("no-results");
 
   if (
     !searchInput ||
@@ -99,14 +136,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function filterReviews() {
-    const searchValue = searchInput.value.trim().toLowerCase();
-    const minimumRating = Number(ratingFilter.value);
+    const searchValue =
+      searchInput.value.trim().toLowerCase();
+
+    const minimumRating =
+      Number(ratingFilter.value);
 
     let visibleCount = 0;
 
     reviewCards.forEach((card) => {
-      const searchableText = card.dataset.search || "";
-      const rating = Number(card.dataset.rating);
+      const searchableText =
+        card.dataset.search || "";
+
+      const rating =
+        Number(card.dataset.rating);
 
       const shouldShow =
         searchableText.includes(searchValue) &&
@@ -129,16 +172,26 @@ document.addEventListener("DOMContentLoaded", async () => {
       reviewCards.length === 0;
   }
 
-  searchInput.addEventListener("input", filterReviews);
-  ratingFilter.addEventListener("change", filterReviews);
+  searchInput.addEventListener(
+    "input",
+    filterReviews
+  );
 
-  clearFiltersButton.addEventListener("click", () => {
-    searchInput.value = "";
-    ratingFilter.value = "0";
+  ratingFilter.addEventListener(
+    "change",
+    filterReviews
+  );
 
-    filterReviews();
-    searchInput.focus();
-  });
+  clearFiltersButton.addEventListener(
+    "click",
+    () => {
+      searchInput.value = "";
+      ratingFilter.value = "0";
+
+      filterReviews();
+      searchInput.focus();
+    }
+  );
 
   filterReviews();
 });

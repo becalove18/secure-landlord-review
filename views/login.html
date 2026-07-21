@@ -2,42 +2,111 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login</title>
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Login | RentReview</title>
+
   <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
-  <main>
-    <h1>Login</h1>
+  <nav class="site-nav">
+    <a class="site-logo" href="/">
+      <span class="logo-icon" aria-hidden="true">⌂</span>
+      <span>RentReview</span>
+    </a>
 
-    <form action="/login" method="POST">
-      <label for="email">Email Address</label>
-      <input
-        id="email"
-        name="email"
-        type="email"
-        required
-      >
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/reviews">Reviews</a>
 
-      <label for="password">Password</label>
-      <input
-        id="password"
-        name="password"
-        type="password"
-        required
-      >
+      <span id="logged-out-links">
+        <a href="/register">Register</a>
+        <a href="/login">Login</a>
+      </span>
 
-      <button type="submit">Login</button>
-    </form>
+      <span id="logged-in-links" hidden>
+        <a href="/submit-review">Submit Review</a>
 
-    <p>
-      Need an account?
-      <a href="/register">Register</a>
-    </p>
+        <button
+          id="logout-button"
+          class="nav-button"
+          type="button"
+        >
+          Logout
+        </button>
+      </span>
+    </div>
+  </nav>
 
-    <p>
-      <a href="/">Return home</a>
-    </p>
+  <main class="auth-page">
+    <section class="auth-card">
+      <p class="section-label">
+        WELCOME BACK
+      </p>
+
+      <h1>
+        Log in to RentReview
+      </h1>
+
+      <p class="auth-description">
+        Access your account to submit a landlord review.
+      </p>
+
+      <form action="/login" method="POST">
+        <div class="form-group">
+          <label for="email">
+            Email Address
+          </label>
+
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">
+            Password
+          </label>
+
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          >
+        </div>
+
+        <button
+          class="primary-button form-submit-button"
+          type="submit"
+        >
+          Login
+        </button>
+      </form>
+
+      <p class="auth-switch">
+        Do not have an account?
+        <a href="/register">Create one here.</a>
+      </p>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <p>
+      RentReview helps renters make informed housing decisions.
+    </p>
+  </footer>
+
+  <script src="/script.js" defer></script>
 </body>
 </html>

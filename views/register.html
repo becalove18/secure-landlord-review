@@ -2,55 +2,133 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Create Account</title>
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Register | RentReview</title>
+
   <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
-  <main>
-    <h1>Create an Account</h1>
+  <nav class="site-nav">
+    <a class="site-logo" href="/">
+      <span class="logo-icon" aria-hidden="true">⌂</span>
+      <span>RentReview</span>
+    </a>
 
-    <form action="/register" method="POST">
-      <label for="username">Username</label>
-      <input
-        id="username"
-        name="username"
-        type="text"
-        minlength="3"
-        maxlength="50"
-        required
-      >
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/reviews">Reviews</a>
 
-      <label for="email">Email Address</label>
-      <input
-        id="email"
-        name="email"
-        type="email"
-        maxlength="100"
-        required
-      >
+      <span id="logged-out-links">
+        <a href="/register">Register</a>
+        <a href="/login">Login</a>
+      </span>
 
-      <label for="password">Password</label>
-      <input
-        id="password"
-        name="password"
-        type="password"
-        minlength="8"
-        maxlength="72"
-        required
-      >
+      <span id="logged-in-links" hidden>
+        <a href="/submit-review">Submit Review</a>
 
-      <button type="submit">Register</button>
-    </form>
+        <button
+          id="logout-button"
+          class="nav-button"
+          type="button"
+        >
+          Logout
+        </button>
+      </span>
+    </div>
+  </nav>
 
-    <p>
-      Already have an account?
-      <a href="/login">Log in</a>
-    </p>
+  <main class="auth-page">
+    <section class="auth-card">
+      <p class="section-label">
+        JOIN THE COMMUNITY
+      </p>
 
-    <p>
-      <a href="/">Return home</a>
-    </p>
+      <h1>
+        Create an account
+      </h1>
+
+      <p class="auth-description">
+        Register securely so you can share a landlord review.
+      </p>
+
+      <form action="/register" method="POST">
+        <div class="form-group">
+          <label for="username">
+            Username
+          </label>
+
+          <input
+            id="username"
+            name="username"
+            type="text"
+            minlength="3"
+            maxlength="50"
+            autocomplete="username"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="email">
+            Email Address
+          </label>
+
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">
+            Password
+          </label>
+
+          <input
+            id="password"
+            name="password"
+            type="password"
+            minlength="8"
+            maxlength="72"
+            autocomplete="new-password"
+            required
+          >
+
+          <p class="field-help">
+            Use at least 8 characters.
+          </p>
+        </div>
+
+        <button
+          class="primary-button form-submit-button"
+          type="submit"
+        >
+          Create Account
+        </button>
+      </form>
+
+      <p class="auth-switch">
+        Already have an account?
+        <a href="/login">Log in here.</a>
+      </p>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <p>
+      RentReview helps renters make informed housing decisions.
+    </p>
+  </footer>
+
+  <script src="/script.js" defer></script>
 </body>
 </html>

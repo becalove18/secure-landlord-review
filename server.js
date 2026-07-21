@@ -59,6 +59,8 @@ function requireLogin(req, res, next) {
 }
 
 app.get("/auth-status", (req, res) => {
+  res.set("Cache-Control", "no-store");
+
   res.json({
     loggedIn: Boolean(req.session.userId),
     username: req.session.username || null,
@@ -109,9 +111,9 @@ app.post(
       );
 
       if (existingUser.rows.length > 0) {
-        return res.status(409).send(
-          "That username or email address is already registered."
-        );
+        return res
+          .status(409)
+          .send("That username or email address is already registered.");
       }
 
       const passwordHash = await bcrypt.hash(password, 12);
@@ -126,10 +128,7 @@ app.post(
       return res.redirect("/login");
     } catch (error) {
       console.error("Registration error:", error);
-
-      return res.status(500).send(
-        "The account could not be created."
-      );
+      return res.status(500).send("The account could not be created.");
     }
   }
 );
@@ -141,21 +140,14 @@ app.get("/login", (req, res) => {
 app.post(
   "/login",
   [
-    body("email")
-      .trim()
-      .isEmail()
-      .normalizeEmail(),
-
-    body("password")
-      .notEmpty(),
+    body("email").trim().isEmail().normalizeEmail(),
+    body("password").notEmpty(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      return res.status(400).send(
-        "Invalid login information."
-      );
+      return res.status(400).send("Invalid login information.");
     }
 
     const { email, password } = req.body;
@@ -169,9 +161,7 @@ app.post(
       );
 
       if (result.rows.length === 0) {
-        return res.status(401).send(
-          "Invalid email or password."
-        );
+        return res.status(401).send("Invalid email or password.");
       }
 
       const user = result.rows[0];
@@ -182,21 +172,16 @@ app.post(
       );
 
       if (!passwordMatches) {
-        return res.status(401).send(
-          "Invalid email or password."
-        );
+        return res.status(401).send("Invalid email or password.");
       }
 
       req.session.regenerate((regenerateError) => {
         if (regenerateError) {
-          console.error(
-            "Session regeneration error:",
-            regenerateError
-          );
+          console.error("Session regeneration error:", regenerateError);
 
-          return res.status(500).send(
-            "The login session could not be created."
-          );
+          return res
+            .status(500)
+            .send("The login session could not be created.");
         }
 
         req.session.userId = user.id;
@@ -204,14 +189,11 @@ app.post(
 
         req.session.save((saveError) => {
           if (saveError) {
-            console.error(
-              "Session save error:",
-              saveError
-            );
+            console.error("Session save error:", saveError);
 
-            return res.status(500).send(
-              "Login succeeded, but the session could not be saved."
-            );
+            return res
+              .status(500)
+              .send("Login succeeded, but the session could not be saved.");
           }
 
           return res.redirect("/submit-review");
@@ -219,10 +201,7 @@ app.post(
       });
     } catch (error) {
       console.error("Login error:", error);
-
-      return res.status(500).send(
-        "The login request could not be completed."
-      );
+      return res.status(500).send("The login request could not be completed.");
     }
   }
 );
@@ -249,19 +228,9 @@ app.post("/logout", (req, res) => {
   });
 });
 
-app.get(
-  "/submit-review",
-  requireLogin,
-  (req, res) => {
-    res.sendFile(
-      path.join(
-        __dirname,
-        "views",
-        "submit-review.html"
-      )
-    );
-  }
-);
+app.get("/submit-review", requireLogin, (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "submit-review.html"));
+});
 
 app.post(
   "/submit-review",
@@ -270,37 +239,27 @@ app.post(
     body("landlord_name")
       .trim()
       .isLength({ min: 2, max: 100 })
-      .withMessage(
-        "Landlord name must be between 2 and 100 characters."
-      ),
+      .withMessage("Landlord name must be between 2 and 100 characters."),
 
     body("property_address")
       .trim()
       .isLength({ min: 5, max: 200 })
-      .withMessage(
-        "Property address must be between 5 and 200 characters."
-      ),
+      .withMessage("Property address must be between 5 and 200 characters."),
 
     body("rating")
       .isInt({ min: 1, max: 5 })
-      .withMessage(
-        "Rating must be between 1 and 5."
-      ),
+      .withMessage("Rating must be between 1 and 5."),
 
     body("review_text")
       .trim()
       .isLength({ min: 10, max: 1000 })
-      .withMessage(
-        "Review must be between 10 and 1000 characters."
-      ),
+      .withMessage("Review must be between 10 and 1000 characters."),
   ],
   async (req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      return res.status(400).send(
-        errors.array()[0].msg
-      );
+      return res.status(400).send(errors.array()[0].msg);
     }
 
     const {
@@ -325,8 +284,7 @@ app.post(
         [landlord_name, property_address]
       );
 
-      const landlordId =
-        landlordResult.rows[0].id;
+      const landlordId = landlordResult.rows[0].id;
 
       await client.query(
         `INSERT INTO reviews
@@ -348,14 +306,9 @@ app.post(
         await client.query("ROLLBACK");
       }
 
-      console.error(
-        "Review submission error:",
-        error
-      );
+      console.error("Review submission error:", error);
 
-      return res.status(500).send(
-        "The review could not be submitted."
-      );
+      return res.status(500).send("The review could not be submitted.");
     } finally {
       if (client) {
         client.release();
@@ -382,40 +335,32 @@ app.get("/reviews", async (req, res) => {
       ORDER BY reviews.created_at DESC
     `);
 
-    const isLoggedIn =
-      Boolean(req.session.userId);
+    const isLoggedIn = Boolean(req.session.userId);
 
     const accountLinks = isLoggedIn
       ? `
-        <a href="/submit-review">
-          Submit Review
-        </a>
+        <span id="logged-in-links">
+          <a href="/submit-review">Submit Review</a>
 
-        <button
-          id="logout-button"
-          class="nav-button"
-          type="button"
-        >
-          Logout
-        </button>
+          <button
+            id="logout-button"
+            class="nav-button"
+            type="button"
+          >
+            Logout
+          </button>
+        </span>
       `
       : `
-        <a href="/login">
-          Login
-        </a>
-
-        <a
-          href="/register"
-          class="nav-button"
-        >
-          Register
-        </a>
+        <span id="logged-out-links">
+          <a href="/register">Register</a>
+          <a href="/login">Login</a>
+        </span>
       `;
 
     const reviewCards = result.rows
       .map((review) => {
-        const rating =
-          Number(review.rating);
+        const rating = Number(review.rating);
 
         const stars =
           "★".repeat(rating) +
@@ -438,9 +383,7 @@ app.get("/reviews", async (req, res) => {
                 </p>
 
                 <h2>
-                  ${escapeHtml(
-                    review.landlord_name
-                  )}
+                  ${escapeHtml(review.landlord_name)}
                 </h2>
               </div>
 
@@ -453,39 +396,28 @@ app.get("/reviews", async (req, res) => {
             </div>
 
             <div class="property-address">
-              <span class="property-icon">
+              <span class="property-icon" aria-hidden="true">
                 ⌂
               </span>
 
               <span>
-                ${escapeHtml(
-                  review.property_address
-                )}
+                ${escapeHtml(review.property_address)}
               </span>
             </div>
 
-            <p class="review-text">
-              ${escapeHtml(
-                review.review_text
-              )}
-            </p>
+            <p class="review-text">${escapeHtml(review.review_text)}</p>
 
             <div class="review-footer">
               <span>
                 Posted by
-
                 <strong>
-                  ${escapeHtml(
-                    review.username
-                  )}
+                  ${escapeHtml(review.username)}
                 </strong>
               </span>
 
               <span>
                 ${escapeHtml(
-                  new Date(
-                    review.created_at
-                  ).toLocaleDateString(
+                  new Date(review.created_at).toLocaleDateString(
                     "en-US",
                     {
                       year: "numeric",
@@ -503,7 +435,6 @@ app.get("/reviews", async (req, res) => {
 
     return res.send(`
       <!DOCTYPE html>
-
       <html lang="en">
       <head>
         <meta charset="UTF-8">
@@ -513,7 +444,7 @@ app.get("/reviews", async (req, res) => {
           content="width=device-width, initial-scale=1.0"
         >
 
-        <title>Landlord Reviews</title>
+        <title>Landlord Reviews | RentReview</title>
 
         <link
           rel="stylesheet"
@@ -523,22 +454,14 @@ app.get("/reviews", async (req, res) => {
 
       <body>
         <nav class="site-nav">
-          <a
-            class="site-logo"
-            href="/"
-          >
-            RentReview
+          <a class="site-logo" href="/">
+            <span class="logo-icon" aria-hidden="true">⌂</span>
+            <span>RentReview</span>
           </a>
 
           <div class="nav-links">
-            <a href="/">
-              Home
-            </a>
-
-            <a href="/reviews">
-              Reviews
-            </a>
-
+            <a href="/">Home</a>
+            <a href="/reviews">Reviews</a>
             ${accountLinks}
           </div>
         </nav>
@@ -554,8 +477,8 @@ app.get("/reviews", async (req, res) => {
             </h1>
 
             <p class="hero-description">
-              Read rental experiences from other tenants
-              and make a more informed housing decision.
+              Read rental experiences from other tenants and
+              make a more informed housing decision.
             </p>
           </div>
         </header>
@@ -580,34 +503,17 @@ app.get("/reviews", async (req, res) => {
               </label>
 
               <select id="rating-filter">
-                <option value="0">
-                  All ratings
-                </option>
-
-                <option value="5">
-                  5 stars
-                </option>
-
-                <option value="4">
-                  4 stars and up
-                </option>
-
-                <option value="3">
-                  3 stars and up
-                </option>
-
-                <option value="2">
-                  2 stars and up
-                </option>
-
-                <option value="1">
-                  1 star and up
-                </option>
+                <option value="0">All ratings</option>
+                <option value="5">5 stars</option>
+                <option value="4">4 stars and up</option>
+                <option value="3">3 stars and up</option>
+                <option value="2">2 stars and up</option>
+                <option value="1">1 star and up</option>
               </select>
             </div>
 
             <button
-              class="clear-filters-button"
+              class="secondary-button clear-filters-button"
               id="clear-filters"
               type="button"
             >
@@ -640,21 +546,31 @@ app.get("/reviews", async (req, res) => {
               reviewCards ||
               `
                 <div class="empty-state">
-                  <h2>
-                    No reviews yet
-                  </h2>
+                  <h2>No reviews yet</h2>
 
                   <p>
-                    Be the first person to share
-                    a rental experience.
+                    Be the first person to share a rental experience.
                   </p>
 
-                  <a
-                    class="primary-button"
-                    href="/submit-review"
-                  >
-                    Submit a review
-                  </a>
+                  ${
+                    isLoggedIn
+                      ? `
+                        <a
+                          class="primary-button"
+                          href="/submit-review"
+                        >
+                          Submit a Review
+                        </a>
+                      `
+                      : `
+                        <a
+                          class="primary-button"
+                          href="/register"
+                        >
+                          Create an Account
+                        </a>
+                      `
+                  }
                 </div>
               `
             }
@@ -665,45 +581,30 @@ app.get("/reviews", async (req, res) => {
             id="no-results"
             hidden
           >
-            <h2>
-              No matching reviews
-            </h2>
+            <h2>No matching reviews</h2>
 
             <p>
-              Try changing your search term
-              or rating filter.
+              Try changing your search term or rating filter.
             </p>
           </section>
         </main>
 
         <footer class="site-footer">
           <p>
-            RentReview helps renters make
-            informed housing decisions.
+            RentReview helps renters make informed housing decisions.
           </p>
         </footer>
 
-        <script
-          src="/script.js"
-          defer
-        ></script>
+        <script src="/script.js" defer></script>
       </body>
       </html>
     `);
   } catch (error) {
-    console.error(
-      "Review display error:",
-      error
-    );
-
-    return res.status(500).send(
-      "The reviews could not be loaded."
-    );
+    console.error("Review display error:", error);
+    return res.status(500).send("The reviews could not be loaded.");
   }
 });
 
 app.listen(PORT, () => {
-  console.log(
-    `Server running on port ${PORT}`
-  );
+  console.log(`Server running on port ${PORT}`);
 });
