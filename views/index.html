@@ -20,18 +20,25 @@
     </a>
 
     <div class="nav-links">
-        <a href="/">Home</a>
-        <a href="/reviews">View Reviews</a>
+      <a href="/">Home</a>
+      <a href="/reviews">View Reviews</a>
 
-        <span id="logged-out-links">
-            <a href="/register">Register</a>
-            <a href="/login">Login</a>
-        </span>
+      <span id="logged-out-links">
+        <a href="/register">Register</a>
+        <a href="/login">Login</a>
+      </span>
 
-        <span id="logged-in-links" style="display: none;">
-            <a href="/submit-review">Submit Review</a>
-            <button id="logout-button" type="button">Logout</button>
-        </span>
+      <span id="logged-in-links" hidden>
+        <a href="/submit-review">Submit Review</a>
+
+        <button
+          id="logout-button"
+          class="nav-button"
+          type="button"
+        >
+          Logout
+        </button>
+      </span>
     </div>
   </nav>
 
@@ -55,8 +62,21 @@
           Browse Reviews
         </a>
 
-        <a class="secondary-button" href="/submit-review">
+        <a
+          id="hero-submit-review"
+          class="secondary-button"
+          href="/submit-review"
+          hidden
+        >
           Submit a Review
+        </a>
+
+        <a
+          id="hero-create-account"
+          class="secondary-button"
+          href="/register"
+        >
+          Create an Account
         </a>
       </div>
     </div>
@@ -156,8 +176,21 @@
           landlord review.
         </p>
 
-        <a class="text-link" href="/register">
+        <a
+          id="feature-create-account"
+          class="text-link"
+          href="/register"
+        >
           Create an account →
+        </a>
+
+        <a
+          id="feature-submit-review"
+          class="text-link"
+          href="/submit-review"
+          hidden
+        >
+          Submit a review →
         </a>
       </article>
     </section>
@@ -168,5 +201,7 @@
       RentReview helps renters make informed housing decisions.
     </p>
   </footer>
+
+  <script src="/script.js" defer></script>
 </body>
 </html>
