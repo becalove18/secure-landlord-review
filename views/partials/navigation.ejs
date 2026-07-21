@@ -1,0 +1,35 @@
+<nav class="site-nav">
+  <a class="site-logo" href="/">
+    <span class="logo-icon" aria-hidden="true">⌂</span>
+    <span>RentReview</span>
+  </a>
+
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/reviews">Reviews</a>
+
+    <span
+      id="logged-out-links"
+      <%= isLoggedIn ? "hidden" : "" %>
+    >
+      <a href="/register">Register</a>
+      <a href="/login">Login</a>
+    </span>
+
+    <span
+      id="logged-in-links"
+      <%= isLoggedIn ? "" : "hidden" %>
+    >
+      <a href="/profile">My Profile</a>
+      <a href="/submit-review">Submit Review</a>
+
+      <button
+        id="logout-button"
+        class="nav-button"
+        type="button"
+      >
+        Logout
+      </button>
+    </span>
+  </div>
+</nav>

@@ -1,48 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <title>RentReview | Secure Landlord Reviews</title>
-
-  <link rel="stylesheet" href="/style.css">
+  <%- include("partials/head", {
+    pageTitle: "RentReview | Secure Landlord Reviews"
+  }) %>
 </head>
 
 <body>
-  <nav class="site-nav">
-    <a class="site-logo" href="/">
-      <span class="logo-icon" aria-hidden="true">⌂</span>
-      <span>RentReview</span>
-    </a>
-
-    <div class="nav-links">
-      <a href="/">Home</a>
-      <a href="/reviews">Reviews</a>
-
-      <span id="logged-out-links">
-        <a href="/register">Register</a>
-        <a href="/login">Login</a>
-      </span>
-
-      <span id="logged-in-links" hidden>
-        <a href="/profile">My Profile</a>
-        <a href="/submit-review">Submit Review</a>
-
-        <button
-          id="logout-button"
-          class="nav-button"
-          type="button"
-        >
-          Logout
-        </button>
-      </span>
-    </div>
-  </nav>
+  <%- include("partials/navigation", {
+    isLoggedIn: isLoggedIn
+  }) %>
 
   <header class="home-hero">
     <div class="home-hero-content">
@@ -186,11 +153,7 @@
     </section>
   </main>
 
-  <footer class="site-footer">
-    <p>
-      RentReview helps renters make informed housing decisions.
-    </p>
-  </footer>
+  <%- include("partials/footer") %>
 
   <script src="/script.js" defer></script>
 </body>

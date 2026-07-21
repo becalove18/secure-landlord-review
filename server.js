@@ -71,7 +71,9 @@ app.get("/auth-status", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "index.html"));
+  res.render("index", {
+    isLoggedIn: Boolean(req.session.userId),
+  });
 });
 
 app.get("/register", (req, res) => {
