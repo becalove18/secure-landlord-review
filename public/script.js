@@ -1,12 +1,94 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const searchInput = document.getElementById("review-search");
-  const ratingFilter = document.getElementById("rating-filter");
-  const clearFiltersButton = document.getElementById("clear-filters");
-  const reviewCards = document.querySelectorAll(".review-card");
-  const reviewCount = document.getElementById("review-count");
-  const noResults = document.getElementById("no-results");
+  const loggedOutLinks =
+    document.getElementById("logged-out-links");
 
-  // Stop here on pages that do not contain the review controls.
+  const loggedInLinks =
+    document.getElementById("logged-in-links");
+
+  const logoutButton =
+    document.getElementById("logout-button");
+
+  async function updateNavigation() {
+    if (!loggedOutLinks || !loggedInLinks) {
+      return;
+    }
+
+    try {
+      const response = await fetch("/auth-status", {
+        credentials: "same-origin"
+      });
+
+      if (!response.ok) {
+        throw new Error("Unable to check login status.");
+      }
+
+      const data = await response.json();
+
+      if (data.loggedIn) {
+        loggedOutLinks.hidden = true;
+        loggedInLinks.hidden = false;
+      } else {
+        loggedOutLinks.hidden = false;
+        loggedInLinks.hidden = true;
+      }
+    } catch (error) {
+      console.error(
+        "Login status error:",
+        error
+      );
+
+      loggedOutLinks.hidden = false;
+      loggedInLinks.hidden = true;
+    }
+  }
+
+  if (logoutButton) {
+    logoutButton.addEventListener(
+      "click",
+      async () => {
+        try {
+          const response = await fetch("/logout", {
+            method: "POST",
+            credentials: "same-origin"
+          });
+
+          if (!response.ok) {
+            throw new Error("Logout failed.");
+          }
+
+          window.location.href = "/";
+        } catch (error) {
+          console.error("Logout error:", error);
+          alert(
+            "Unable to log out. Please try again."
+          );
+        }
+      }
+    );
+  }
+
+  updateNavigation();
+
+  const searchInput =
+    document.getElementById("review-search");
+
+  const ratingFilter =
+    document.getElementById("rating-filter");
+
+  const clearFiltersButton =
+    document.getElementById("clear-filters");
+
+  const reviewCards =
+    document.querySelectorAll(".review-card");
+
+  const reviewCount =
+    document.getElementById("review-count");
+
+  const noResults =
+    document.getElementById("no-results");
+
+  // Stop the review-filter portion on pages
+  // that do not contain the review controls.
   if (
     !searchInput ||
     !ratingFilter ||
@@ -22,7 +104,8 @@ document.addEventListener("DOMContentLoaded", () => {
       .trim()
       .toLowerCase();
 
-    const minimumRating = Number(ratingFilter.value);
+    const minimumRating =
+      Number(ratingFilter.value);
 
     let visibleCount = 0;
 

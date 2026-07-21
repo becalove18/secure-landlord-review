@@ -55,6 +55,12 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+app.get("/auth-status", (req, res) => {
+  res.json({
+    loggedIn: Boolean(req.session.userId),
+  });
+});
+
 app.post(
   "/login",
   [
@@ -210,15 +216,21 @@ app.post(
   }
 );
 
-app.get("/logout", (req, res) => {
+app.post("/logout", (req, res) => {
   req.session.destroy((error) => {
     if (error) {
       console.error("Logout error:", error);
-      return res.status(500).send("Unable to log out.");
+
+      return res.status(500).json({
+        message: "Unable to log out."
+      });
     }
 
     res.clearCookie("connect.sid");
-    res.redirect("/");
+
+    return res.json({
+      message: "Logged out successfully."
+    });
   });
 });
 
@@ -478,9 +490,9 @@ app.get("/reviews", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "views", "index.html")
-  );
+  const isLoggedIn = Boolean(req.session.userId);
+
+  res.sendFile(path.join(__dirname, "views", "index.html"));
 });
 
 app.get("/register", (req, res) => {

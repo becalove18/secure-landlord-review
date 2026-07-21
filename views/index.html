@@ -20,11 +20,18 @@
     </a>
 
     <div class="nav-links">
-      <a href="/">Home</a>
-      <a href="/register">Register</a>
-      <a href="/login">Login</a>
-      <a href="/submit-review">Submit Review</a>
-      <a href="/reviews">View Reviews</a>
+        <a href="/">Home</a>
+        <a href="/reviews">View Reviews</a>
+
+        <span id="logged-out-links">
+            <a href="/register">Register</a>
+            <a href="/login">Login</a>
+        </span>
+
+        <span id="logged-in-links" style="display: none;">
+            <a href="/submit-review">Submit Review</a>
+            <button id="logout-button" type="button">Logout</button>
+        </span>
     </div>
   </nav>
 
