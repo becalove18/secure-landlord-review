@@ -105,6 +105,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  const deleteReviewForms =
+  document.querySelectorAll(".delete-review-form");
+
+  deleteReviewForms.forEach((form) => {
+    form.addEventListener("submit", (event) => {
+      const userConfirmed = window.confirm(
+        "Are you sure you want to permanently delete this review? This action cannot be undone."
+      );
+
+      if (!userConfirmed) {
+        event.preventDefault();
+      }
+    });
+  });
+
+
   await updateNavigation();
 
   const searchInput =

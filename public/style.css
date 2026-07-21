@@ -620,7 +620,66 @@ textarea:focus {
   margin: 0;
 }
 
-/* Mobile layout */
+/* Review management */
+
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0.25rem 0 1.25rem;
+}
+
+.delete-review-form {
+  margin: 0;
+}
+
+.review-action-button {
+  min-height: 40px;
+  padding: 0.65rem 1rem;
+  font-size: 0.92rem;
+}
+
+.danger-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0.82rem 1.4rem;
+  border: 1px solid #9b3a32;
+  border-radius: 0.7rem;
+  background: transparent;
+  color: #9b3a32;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.danger-button:hover {
+  border-color: #7d2e28;
+  background: #9b3a32;
+  color: var(--white);
+  box-shadow: 0 8px 18px rgba(125, 46, 40, 0.2);
+}
+
+.danger-button:focus-visible {
+  outline: 3px solid rgba(155, 58, 50, 0.25);
+  outline-offset: 3px;
+}
+
+.edit-form-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-cancel-button {
+  width: 100%;
+}
 
 @media (max-width: 760px) {
   .site-nav {
@@ -666,5 +725,20 @@ textarea:focus {
   .submit-review-card,
   .auth-card {
     padding: 1.5rem;
+  }  
+  
+  .edit-form-actions {
+    grid-template-columns: 1fr;
   }
+
+  .review-actions {
+    flex-direction: column;
+  }
+
+  .review-actions .review-action-button,
+  .delete-review-form,
+  .delete-review-form .danger-button {
+    width: 100%;
+  }
+
 }

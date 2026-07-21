@@ -317,24 +317,437 @@ app.post(
   }
 );
 
+app.get("/reviews/:id/edit", requireLogin, async (req, res) => {
+  const reviewId = Number(req.params.id);
+
+  if (!Number.isInteger(reviewId) || reviewId < 1) {
+    return res.status(400).send("Invalid review ID.");
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT
+         reviews.id AS review_id,
+         reviews.rating,
+         reviews.review_text,
+         landlords.landlord_name,
+         landlords.property_address
+       FROM reviews
+       INNER JOIN landlords
+         ON reviews.landlord_id = landlords.id
+       WHERE reviews.id = $1
+         AND reviews.user_id = $2`,
+      [reviewId, req.session.userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res
+        .status(404)
+        .send("Review not found, or you do not have permission to edit it.");
+    }
+
+    const review = result.rows[0];
+
+    const ratingOptions = [1, 2, 3, 4, 5]
+      .map((ratingNumber) => {
+        const selected =
+          Number(review.rating) === ratingNumber
+            ? "selected"
+            : "";
+
+        return `
+          <option
+            value="${ratingNumber}"
+            ${selected}
+          >
+            ${ratingNumber} Star${ratingNumber === 1 ? "" : "s"}
+          </option>
+        `;
+      })
+      .join("");
+
+    return res.send(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0"
+        >
+
+        <title>Edit Review | RentReview</title>
+
+        <link
+          rel="stylesheet"
+          href="/style.css"
+        >
+      </head>
+
+      <body>
+        <nav class="site-nav">
+          <a class="site-logo" href="/">
+            <span class="logo-icon" aria-hidden="true">⌂</span>
+            <span>RentReview</span>
+          </a>
+
+          <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/reviews">Reviews</a>
+            <a href="/submit-review">Submit Review</a>
+
+            <button
+              id="logout-button"
+              class="nav-button"
+              type="button"
+            >
+              Logout
+            </button>
+          </div>
+        </nav>
+
+        <main class="submit-review-page">
+          <section class="submit-review-card">
+            <div class="submit-review-heading">
+              <p class="eyebrow">
+                UPDATE YOUR EXPERIENCE
+              </p>
+
+              <h1>Edit Review</h1>
+
+              <p class="submit-review-description">
+                Update the landlord, property, rating, or review
+                information below.
+              </p>
+            </div>
+
+            <form
+              class="submit-review-form"
+              action="/reviews/${review.review_id}/edit"
+              method="POST"
+            >
+              <div class="form-group">
+                <label for="landlord_name">
+                  Landlord name
+                </label>
+
+                <input
+                  id="landlord_name"
+                  name="landlord_name"
+                  type="text"
+                  minlength="2"
+                  maxlength="100"
+                  value="${escapeHtml(review.landlord_name)}"
+                  required
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="property_address">
+                  Property address
+                </label>
+
+                <input
+                  id="property_address"
+                  name="property_address"
+                  type="text"
+                  minlength="5"
+                  maxlength="200"
+                  value="${escapeHtml(review.property_address)}"
+                  required
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="rating">
+                  Rating
+                </label>
+
+                <select
+                  id="rating"
+                  name="rating"
+                  required
+                >
+                  ${ratingOptions}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="review_text">
+                  Review description
+                </label>
+
+                <textarea
+                  id="review_text"
+                  name="review_text"
+                  minlength="10"
+                  maxlength="1000"
+                  required
+                >${escapeHtml(review.review_text)}</textarea>
+
+                <p class="field-help">
+                  Enter between 10 and 1000 characters.
+                </p>
+              </div>
+
+              <div class="edit-form-actions">
+                <button
+                  class="primary-button form-submit-button"
+                  type="submit"
+                >
+                  Save Changes
+                </button>
+
+                <a
+                  class="secondary-button form-cancel-button"
+                  href="/reviews"
+                >
+                  Cancel
+                </a>
+              </div>
+            </form>
+          </section>
+        </main>
+
+        <footer class="site-footer">
+          <p>
+            RentReview helps renters make informed housing decisions.
+          </p>
+        </footer>
+
+        <script src="/script.js" defer></script>
+      </body>
+      </html>
+    `);
+  } catch (error) {
+    console.error("Edit review page error:", error);
+
+    return res.status(500).send(
+      "The review editing page could not be loaded."
+    );
+  }
+});
+
+app.post(
+  "/reviews/:id/edit",
+  requireLogin,
+  [
+    body("landlord_name")
+      .trim()
+      .isLength({ min: 2, max: 100 })
+      .withMessage(
+        "Landlord name must be between 2 and 100 characters."
+      ),
+
+    body("property_address")
+      .trim()
+      .isLength({ min: 5, max: 200 })
+      .withMessage(
+        "Property address must be between 5 and 200 characters."
+      ),
+
+    body("rating")
+      .isInt({ min: 1, max: 5 })
+      .withMessage(
+        "Rating must be between 1 and 5."
+      ),
+
+    body("review_text")
+      .trim()
+      .isLength({ min: 10, max: 1000 })
+      .withMessage(
+        "Review must be between 10 and 1000 characters."
+      ),
+  ],
+  async (req, res) => {
+    const reviewId = Number(req.params.id);
+
+    if (!Number.isInteger(reviewId) || reviewId < 1) {
+      return res.status(400).send("Invalid review ID.");
+    }
+
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).send(
+        errors.array()[0].msg
+      );
+    }
+
+    const {
+      landlord_name,
+      property_address,
+      rating,
+      review_text,
+    } = req.body;
+
+    let client;
+
+    try {
+      client = await pool.connect();
+
+      await client.query("BEGIN");
+
+      const ownedReview = await client.query(
+        `SELECT landlord_id
+         FROM reviews
+         WHERE id = $1
+           AND user_id = $2
+         FOR UPDATE`,
+        [reviewId, req.session.userId]
+      );
+
+      if (ownedReview.rows.length === 0) {
+        await client.query("ROLLBACK");
+
+        return res
+          .status(404)
+          .send(
+            "Review not found, or you do not have permission to edit it."
+          );
+      }
+
+      const landlordId =
+        ownedReview.rows[0].landlord_id;
+
+      await client.query(
+        `UPDATE landlords
+         SET landlord_name = $1,
+             property_address = $2
+         WHERE id = $3`,
+        [
+          landlord_name,
+          property_address,
+          landlordId,
+        ]
+      );
+
+      await client.query(
+        `UPDATE reviews
+         SET rating = $1,
+             review_text = $2
+         WHERE id = $3
+           AND user_id = $4`,
+        [
+          Number(rating),
+          review_text,
+          reviewId,
+          req.session.userId,
+        ]
+      );
+
+      await client.query("COMMIT");
+
+      return res.redirect("/reviews");
+    } catch (error) {
+      if (client) {
+        await client.query("ROLLBACK");
+      }
+
+      console.error("Review update error:", error);
+
+      return res.status(500).send(
+        "The review could not be updated."
+      );
+    } finally {
+      if (client) {
+        client.release();
+      }
+    }
+  }
+);
+
+app.post(
+  "/reviews/:id/delete",
+  requireLogin,
+  async (req, res) => {
+    const reviewId = Number(req.params.id);
+
+    if (!Number.isInteger(reviewId) || reviewId < 1) {
+      return res.status(400).send("Invalid review ID.");
+    }
+
+    let client;
+
+    try {
+      client = await pool.connect();
+
+      await client.query("BEGIN");
+
+      const deletedReview = await client.query(
+        `DELETE FROM reviews
+         WHERE id = $1
+           AND user_id = $2
+         RETURNING landlord_id`,
+        [reviewId, req.session.userId]
+      );
+
+      if (deletedReview.rows.length === 0) {
+        await client.query("ROLLBACK");
+
+        return res
+          .status(404)
+          .send(
+            "Review not found, or you do not have permission to delete it."
+          );
+      }
+
+      const landlordId =
+        deletedReview.rows[0].landlord_id;
+
+      await client.query(
+        `DELETE FROM landlords
+         WHERE id = $1
+           AND NOT EXISTS (
+             SELECT 1
+             FROM reviews
+             WHERE landlord_id = $1
+           )`,
+        [landlordId]
+      );
+
+      await client.query("COMMIT");
+
+      return res.redirect("/reviews");
+    } catch (error) {
+      if (client) {
+        await client.query("ROLLBACK");
+      }
+
+      console.error("Review deletion error:", error);
+
+      return res.status(500).send(
+        "The review could not be deleted."
+      );
+    } finally {
+      if (client) {
+        client.release();
+      }
+    }
+  }
+);
+
 app.get("/reviews", async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT
-        landlords.landlord_name,
-        landlords.property_address,
-        reviews.rating,
-        reviews.review_text,
-        reviews.created_at,
-        users.username
-      FROM reviews
-      INNER JOIN landlords
-        ON reviews.landlord_id = landlords.id
-      INNER JOIN users
-        ON reviews.user_id = users.id
-      ORDER BY reviews.created_at DESC
-    `);
-
+        SELECT
+            reviews.id AS review_id,
+            reviews.user_id,
+            landlords.id AS landlord_id,
+            landlords.landlord_name,
+            landlords.property_address,
+            reviews.rating,
+            reviews.review_text,
+            reviews.created_at,
+            users.username
+        FROM reviews
+        INNER JOIN landlords
+            ON reviews.landlord_id = landlords.id
+        INNER JOIN users
+            ON reviews.user_id = users.id
+        ORDER BY reviews.created_at DESC
+        `);
     const isLoggedIn = Boolean(req.session.userId);
 
     const accountLinks = isLoggedIn
@@ -365,6 +778,10 @@ app.get("/reviews", async (req, res) => {
         const stars =
           "★".repeat(rating) +
           "☆".repeat(5 - rating);
+
+        const userOwnsReview =
+            isLoggedIn &&
+            Number(review.user_id) === Number(req.session.userId);
 
         const searchableText = escapeHtml(
           `${review.landlord_name} ${review.property_address} ${review.review_text} ${review.username}`
@@ -406,6 +823,34 @@ app.get("/reviews", async (req, res) => {
             </div>
 
             <p class="review-text">${escapeHtml(review.review_text)}</p>
+
+            ${
+            userOwnsReview
+                ? `
+                <div class="review-actions">
+                    <a
+                    class="secondary-button review-action-button"
+                    href="/reviews/${review.review_id}/edit"
+                    >
+                    Edit Review
+                    </a>
+
+                    <form
+                    action="/reviews/${review.review_id}/delete"
+                    method="POST"
+                    class="delete-review-form"
+                    >
+                    <button
+                        class="danger-button review-action-button"
+                        type="submit"
+                    >
+                        Delete Review
+                    </button>
+                    </form>
+                </div>
+                `
+                : ""
+            }
 
             <div class="review-footer">
               <span>
