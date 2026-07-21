@@ -141,8 +141,6 @@ These protections are implemented using secure coding techniques and server-side
 
 ## 🔮 Future Improvements
 
-- Edit and delete reviews
-- User profile pages
 - Password reset
 - Email verification
 - Review moderation
