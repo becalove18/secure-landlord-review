@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("partials/head", {
+    pageTitle: "Edit Review | RentReview"
+  }) %>
+</head>
+
+<body>
+  <%- include("partials/navigation", {
+    isLoggedIn
+  }) %>
+
+  <main class="submit-review-page">
+    <section class="submit-review-card">
+      <div class="submit-review-heading">
+        <p class="section-label">
+          UPDATE YOUR EXPERIENCE
+        </p>
+
+        <h1>Edit Review</h1>
+
+        <p class="submit-review-description">
+          Update the landlord, property, rating, or review
+          information below.
+        </p>
+      </div>
+
+      <form
+        class="submit-review-form"
+        action="/reviews/<%= review.review_id %>/edit"
+        method="POST"
+      >
+        <div class="form-group">
+          <label for="landlord_name">
+            Landlord Name
+          </label>
+
+          <input
+            id="landlord_name"
+            name="landlord_name"
+            type="text"
+            minlength="2"
+            maxlength="100"
+            value="<%= review.landlord_name %>"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="property_address">
+            Property Address
+          </label>
+
+          <input
+            id="property_address"
+            name="property_address"
+            type="text"
+            minlength="5"
+            maxlength="200"
+            value="<%= review.property_address %>"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="rating">
+            Rating
+          </label>
+
+          <select
+            id="rating"
+            name="rating"
+            required
+          >
+            <% for (let ratingNumber = 1; ratingNumber <= 5; ratingNumber += 1) { %>
+              <option
+                value="<%= ratingNumber %>"
+                <%= Number(review.rating) === ratingNumber ? "selected" : "" %>
+              >
+                <%= ratingNumber %>
+                Star<%= ratingNumber === 1 ? "" : "s" %>
+              </option>
+            <% } %>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="review_text">
+            Review Description
+          </label>
+
+          <textarea
+            id="review_text"
+            name="review_text"
+            minlength="10"
+            maxlength="1000"
+            rows="7"
+            required
+          ><%= review.review_text %></textarea>
+
+          <p class="field-help">
+            Enter between 10 and 1000 characters.
+          </p>
+        </div>
+
+        <div class="edit-form-actions">
+          <button
+            class="primary-button form-submit-button"
+            type="submit"
+          >
+            Save Changes
+          </button>
+
+          <a
+            class="secondary-button form-cancel-button"
+            href="/reviews"
+          >
+            Cancel
+          </a>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <%- include("partials/footer") %>
+
+  <script src="/script.js" defer></script>
+</body>
+</html>
