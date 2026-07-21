@@ -4,13 +4,20 @@ require("dotenv").config();
 let pool;
 
 if (process.env.DATABASE_URL) {
-  // Used by the deployed website and any local setup
-  // that provides a complete PostgreSQL connection URL.
+  const databaseUrl = new URL(process.env.DATABASE_URL);
+
+  databaseUrl.searchParams.delete("sslmode");
+
   pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: databaseUrl.toString(),
+    ssl:
+      process.env.NODE_ENV === "production"
+        ? {
+            rejectUnauthorized: false,
+          }
+        : false,
   });
 } else {
-  // Optional fallback for your existing local PostgreSQL setup.
   pool = new Pool({
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
