@@ -4,21 +4,24 @@ A secure landlord review website developed as a cybersecurity senior capstone pr
 
 ## 🌐 Live Website
 
-**https://secure-landlord-review.onrender.com**
+https://secure-landlord-review.onrender.com
 
 ---
 
 ## 📌 Project Overview
 
-RentReview is a secure web application that allows tenants to share and browse landlord reviews. The project focuses on implementing cybersecurity best practices while creating a functional full-stack web application.
+RentReview is a secure, responsive web application that allows tenants to share and browse landlord reviews. The project focuses on implementing cybersecurity best practices while demonstrating secure full-stack web development.
 
 ### Features
 
 - Secure user registration
 - Secure login authentication
 - Password hashing with bcrypt
-- Session management
+- Session-based authentication
+- User profile page
 - Submit landlord reviews
+- Edit your own reviews
+- Delete your own reviews
 - Browse landlord reviews
 - Search reviews
 - Filter reviews by rating
@@ -30,10 +33,12 @@ RentReview is a secure web application that allows tenants to share and browse l
 
 - Passwords hashed using bcrypt
 - Parameterized SQL queries to prevent SQL injection
-- Server-side input validation
-- Cross-Site Scripting (XSS) protection through HTML escaping
+- Server-side input validation using express-validator
 - Session-based authentication
-- Protected review submission
+- Session regeneration after successful login
+- Protected routes requiring authentication
+- Ownership verification for editing and deleting reviews
+- Automatic HTML escaping with EJS templates to help prevent Cross-Site Scripting (XSS)
 - Secure HTTP headers using Helmet
 
 ---
@@ -41,6 +46,7 @@ RentReview is a secure web application that allows tenants to share and browse l
 ## 🛠 Technologies Used
 
 ### Frontend
+- EJS
 - HTML5
 - CSS3
 - JavaScript
@@ -51,6 +57,7 @@ RentReview is a secure web application that allows tenants to share and browse l
 
 ### Database
 - PostgreSQL
+- node-postgres (pg)
 
 ### Security Libraries
 - bcrypt
@@ -58,6 +65,23 @@ RentReview is a secure web application that allows tenants to share and browse l
 - express-session
 - connect-pg-simple
 - express-validator
+
+---
+
+## 🏗 Project Architecture
+
+The application follows a modular Express.js architecture using reusable middleware and EJS templates.
+
+Major components include:
+
+- Express.js server
+- PostgreSQL database
+- EJS templating engine
+- Authentication middleware
+- Validation middleware
+- Ownership middleware
+- Session management
+- Client-side search and filtering
 
 ---
 
@@ -107,6 +131,11 @@ http://localhost:3000
 ```
 secure-landlord-review/
 │
+├── middleware/
+│   ├── auth.js
+│   ├── ownership.js
+│   └── validation.js
+│
 ├── public/
 │   ├── script.js
 │   └── style.css
@@ -116,6 +145,7 @@ secure-landlord-review/
 │   │   ├── footer.ejs
 │   │   ├── head.ejs
 │   │   └── navigation.ejs
+│   │
 │   ├── edit-review.ejs
 │   ├── index.ejs
 │   ├── login.ejs
@@ -124,24 +154,45 @@ secure-landlord-review/
 │   ├── reviews.ejs
 │   └── submit-review.ejs
 │
+├── .env
+├── .gitignore
 ├── db.js
-├── server.js
 ├── package.json
-└── README.md
+├── package-lock.json
+├── README.md
+└── server.js
 ```
+
+---
+
+### Folder Overview
+
+- `middleware/` contains reusable middleware for authentication, validation, and ownership checks.
+  - `auth.js` protects routes that require a logged-in user.
+  - `validation.js` contains reusable validation rules for registration, login, and reviews.
+  - `ownership.js` ensures users can only edit or delete their own reviews.
+- `public/` contains browser-accessible CSS and JavaScript files.
+- `views/` contains EJS page templates.
+- `views/partials/` contains reusable page sections such as the document head, navigation bar, and footer.
+- `db.js` configures the PostgreSQL database connection.
+- `server.js` configures the Express application, middleware, and routes.
+- `.env` stores private environment variables and is excluded from Git.
 
 ---
 
 ## 🧪 Security Testing
 
-The application was tested against common web application attacks, including:
+The application was tested against common web application attacks and security risks, including:
 
-- SQL Injection
+- SQL Injection (SQLi)
 - Cross-Site Scripting (XSS)
 - Unauthorized page access
 - Authentication bypass attempts
+- Review ownership enforcement
+- Invalid form input validation
+- Session management testing
 
-These protections are implemented using secure coding techniques and server-side validation.
+These protections are implemented using secure coding practices, parameterized SQL queries, reusable middleware, server-side validation, and session-based authentication.
 
 ---
 
@@ -149,10 +200,9 @@ These protections are implemented using secure coding techniques and server-side
 
 - Password reset
 - Email verification
-- Review moderation
 - Pagination
+- Review moderation
 - Review voting
-
 ---
 
 ## 👩‍💻 Author
