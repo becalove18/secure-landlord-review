@@ -728,6 +728,327 @@ app.post(
   }
 );
 
+app.get("/profile", requireLogin, async (req, res) => {
+  try {
+    const userResult = await pool.query(
+      `SELECT
+         id,
+         username,
+         email,
+         created_at
+       FROM users
+       WHERE id = $1`,
+      [req.session.userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).send("User account not found.");
+    }
+
+    const user = userResult.rows[0];
+
+    const reviewsResult = await pool.query(
+      `SELECT
+         reviews.id AS review_id,
+         reviews.rating,
+         reviews.review_text,
+         reviews.created_at,
+         landlords.landlord_name,
+         landlords.property_address
+       FROM reviews
+       INNER JOIN landlords
+         ON reviews.landlord_id = landlords.id
+       WHERE reviews.user_id = $1
+       ORDER BY reviews.created_at DESC`,
+      [req.session.userId]
+    );
+
+    const reviewCount = reviewsResult.rows.length;
+
+    const profileReviewCards = reviewsResult.rows
+      .map((review) => {
+        const rating = Number(review.rating);
+
+        const stars =
+          "★".repeat(rating) +
+          "☆".repeat(5 - rating);
+
+        return `
+          <article class="review-card profile-review-card">
+            <div class="review-card-header">
+              <div>
+                <p class="review-label">
+                  Landlord
+                </p>
+
+                <h2>
+                  ${escapeHtml(review.landlord_name)}
+                </h2>
+              </div>
+
+              <div
+                class="star-rating"
+                aria-label="${rating} out of 5 stars"
+              >
+                ${stars}
+              </div>
+            </div>
+
+            <div class="property-address">
+              <span
+                class="property-icon"
+                aria-hidden="true"
+              >
+                ⌂
+              </span>
+
+              <span>
+                ${escapeHtml(review.property_address)}
+              </span>
+            </div>
+
+            <p class="review-text">${escapeHtml(review.review_text)}</p>
+
+            <div class="review-actions">
+              <a
+                class="secondary-button review-action-button"
+                href="/reviews/${review.review_id}/edit"
+              >
+                Edit Review
+              </a>
+
+              <form
+                action="/reviews/${review.review_id}/delete"
+                method="POST"
+                class="delete-review-form"
+              >
+                <button
+                  class="danger-button review-action-button"
+                  type="submit"
+                >
+                  Delete Review
+                </button>
+              </form>
+            </div>
+
+            <div class="review-footer">
+              <span>
+                Your review
+              </span>
+
+              <span>
+                ${escapeHtml(
+                  new Date(review.created_at).toLocaleDateString(
+                    "en-US",
+                    {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    }
+                  )
+                )}
+              </span>
+            </div>
+          </article>
+        `;
+      })
+      .join("");
+
+    const accountCreatedDate = new Date(
+      user.created_at
+    ).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    return res.send(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0"
+        >
+
+        <title>My Profile | RentReview</title>
+
+        <link
+          rel="stylesheet"
+          href="/style.css"
+        >
+      </head>
+
+      <body>
+        <nav class="site-nav">
+          <a class="site-logo" href="/">
+            <span
+              class="logo-icon"
+              aria-hidden="true"
+            >
+              ⌂
+            </span>
+
+            <span>RentReview</span>
+          </a>
+
+          <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/reviews">Reviews</a>
+            <a href="/profile">My Profile</a>
+            <a href="/submit-review">Submit Review</a>
+
+            <button
+              id="logout-button"
+              class="nav-button"
+              type="button"
+            >
+              Logout
+            </button>
+          </div>
+        </nav>
+
+        <header class="profile-hero">
+          <div class="hero-content">
+            <p class="eyebrow">
+              YOUR RENTREVIEW ACCOUNT
+            </p>
+
+            <h1>
+              Welcome, ${escapeHtml(user.username)}.
+            </h1>
+
+            <p class="hero-description">
+              View your account information and manage the
+              landlord reviews you have submitted.
+            </p>
+          </div>
+        </header>
+
+        <main class="profile-page">
+          <section class="profile-details-card">
+            <div class="profile-details-heading">
+              <div>
+                <p class="section-label">
+                  ACCOUNT INFORMATION
+                </p>
+
+                <h2>
+                  Profile details
+                </h2>
+              </div>
+
+              <div class="profile-avatar" aria-hidden="true">
+                ${escapeHtml(
+                  user.username.charAt(0).toUpperCase()
+                )}
+              </div>
+            </div>
+
+            <dl class="profile-information">
+              <div class="profile-information-item">
+                <dt>Username</dt>
+
+                <dd>
+                  ${escapeHtml(user.username)}
+                </dd>
+              </div>
+
+              <div class="profile-information-item">
+                <dt>Email address</dt>
+
+                <dd>
+                  ${escapeHtml(user.email)}
+                </dd>
+              </div>
+
+              <div class="profile-information-item">
+                <dt>Member since</dt>
+
+                <dd>
+                  ${escapeHtml(accountCreatedDate)}
+                </dd>
+              </div>
+
+              <div class="profile-information-item">
+                <dt>Reviews submitted</dt>
+
+                <dd>
+                  ${reviewCount}
+                </dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="profile-reviews-section">
+            <div class="reviews-heading">
+              <div>
+                <p class="section-label">
+                  YOUR CONTRIBUTIONS
+                </p>
+
+                <h2>
+                  My reviews
+                </h2>
+              </div>
+
+              <p class="review-count">
+                ${
+                  reviewCount === 1
+                    ? "1 review"
+                    : `${reviewCount} reviews`
+                }
+              </p>
+            </div>
+
+            <div class="profile-reviews-grid">
+              ${
+                profileReviewCards ||
+                `
+                  <div class="empty-state profile-empty-state">
+                    <h2>
+                      You have not submitted any reviews yet
+                    </h2>
+
+                    <p>
+                      Share a rental experience to help other
+                      renters make informed decisions.
+                    </p>
+
+                    <a
+                      class="primary-button"
+                      href="/submit-review"
+                    >
+                      Submit Your First Review
+                    </a>
+                  </div>
+                `
+              }
+            </div>
+          </section>
+        </main>
+
+        <footer class="site-footer">
+          <p>
+            RentReview helps renters make informed housing decisions.
+          </p>
+        </footer>
+
+        <script src="/script.js" defer></script>
+      </body>
+      </html>
+    `);
+  } catch (error) {
+    console.error("Profile page error:", error);
+
+    return res.status(500).send(
+      "The profile page could not be loaded."
+    );
+  }
+});
+
 app.get("/reviews", async (req, res) => {
   try {
     const result = await pool.query(`
@@ -752,7 +1073,9 @@ app.get("/reviews", async (req, res) => {
 
     const accountLinks = isLoggedIn
       ? `
+      
         <span id="logged-in-links">
+          <a href="/profile">My Profile</a>
           <a href="/submit-review">Submit Review</a>
 
           <button
