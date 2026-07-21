@@ -111,21 +111,25 @@ secure-landlord-review/
 │   ├── script.js
 │   └── style.css
 │
-views/
-├── partials/
-│   ├── footer.ejs
-│   ├── head.ejs
-│   └── navigation.ejs
-├── index.ejs
-├── login.ejs
-├── register.ejs
-└── submit-review.ejs
+├── views/
+│   ├── partials/
+│   │   ├── footer.ejs
+│   │   ├── head.ejs
+│   │   └── navigation.ejs
+│   ├── edit-review.ejs
+│   ├── index.ejs
+│   ├── login.ejs
+│   ├── profile.ejs
+│   ├── register.ejs
+│   └── submit-review.ejs
 │
+├── .env
+├── .gitignore
 ├── db.js
-├── server.js
 ├── package.json
+├── package-lock.json
 ├── README.md
-└── .env
+└── server.js
 ```
 
 ---

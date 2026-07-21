@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("partials/head", {
+    pageTitle: "My Profile | RentReview"
+  }) %>
+</head>
+
+<body>
+  <%- include("partials/navigation", {
+    isLoggedIn
+  }) %>
+
+  <header class="profile-hero">
+    <div class="hero-content">
+      <p class="eyebrow">
+        YOUR RENTREVIEW ACCOUNT
+      </p>
+
+      <h1>
+        Welcome, <%= user.username %>.
+      </h1>
+
+      <p class="hero-description">
+        View your account information and manage the
+        landlord reviews you have submitted.
+      </p>
+    </div>
+  </header>
+
+  <main class="profile-page">
+    <section class="profile-details-card">
+      <div class="profile-details-heading">
+        <div>
+          <p class="section-label">
+            ACCOUNT INFORMATION
+          </p>
+
+          <h2>
+            Profile details
+          </h2>
+        </div>
+
+        <div class="profile-avatar" aria-hidden="true">
+          <%= user.username.charAt(0).toUpperCase() %>
+        </div>
+      </div>
+
+      <dl class="profile-information">
+        <div class="profile-information-item">
+          <dt>Username</dt>
+
+          <dd>
+            <%= user.username %>
+          </dd>
+        </div>
+
+        <div class="profile-information-item">
+          <dt>Email address</dt>
+
+          <dd>
+            <%= user.email %>
+          </dd>
+        </div>
+
+        <div class="profile-information-item">
+          <dt>Member since</dt>
+
+          <dd>
+            <%= accountCreatedDate %>
+          </dd>
+        </div>
+
+        <div class="profile-information-item">
+          <dt>Reviews submitted</dt>
+
+          <dd>
+            <%= reviews.length %>
+          </dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="profile-reviews-section">
+      <div class="reviews-heading">
+        <div>
+          <p class="section-label">
+            YOUR CONTRIBUTIONS
+          </p>
+
+          <h2>
+            My reviews
+          </h2>
+        </div>
+
+        <p class="review-count">
+          <%= reviews.length === 1
+            ? "1 review"
+            : `${reviews.length} reviews`
+          %>
+        </p>
+      </div>
+
+      <div class="profile-reviews-grid">
+        <% if (reviews.length === 0) { %>
+          <div class="empty-state profile-empty-state">
+            <h2>
+              You have not submitted any reviews yet
+            </h2>
+
+            <p>
+              Share a rental experience to help other
+              renters make informed decisions.
+            </p>
+
+            <a
+              class="primary-button"
+              href="/submit-review"
+            >
+              Submit Your First Review
+            </a>
+          </div>
+        <% } else { %>
+          <% reviews.forEach((review) => { %>
+            <% const rating = Number(review.rating); %>
+
+            <article class="review-card profile-review-card">
+              <div class="review-card-header">
+                <div>
+                  <p class="review-label">
+                    Landlord
+                  </p>
+
+                  <h2>
+                    <%= review.landlord_name %>
+                  </h2>
+                </div>
+
+                <div
+                  class="star-rating"
+                  aria-label="<%= rating %> out of 5 stars"
+                >
+                  <%= "★".repeat(rating) %><%= "☆".repeat(5 - rating) %>
+                </div>
+              </div>
+
+              <div class="property-address">
+                <span
+                  class="property-icon"
+                  aria-hidden="true"
+                >
+                  ⌂
+                </span>
+
+                <span>
+                  <%= review.property_address %>
+                </span>
+              </div>
+
+              <p class="review-text">
+                <%= review.review_text %>
+              </p>
+
+              <div class="review-actions">
+                <a
+                  class="secondary-button review-action-button"
+                  href="/reviews/<%= review.review_id %>/edit"
+                >
+                  Edit Review
+                </a>
+
+                <form
+                  action="/reviews/<%= review.review_id %>/delete"
+                  method="POST"
+                  class="delete-review-form"
+                >
+                  <button
+                    class="danger-button review-action-button"
+                    type="submit"
+                  >
+                    Delete Review
+                  </button>
+                </form>
+              </div>
+
+              <div class="review-footer">
+                <span>
+                  Your review
+                </span>
+
+                <span>
+                  <%= new Date(review.created_at).toLocaleDateString(
+                    "en-US",
+                    {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    }
+                  ) %>
+                </span>
+              </div>
+            </article>
+          <% }) %>
+        <% } %>
+      </div>
+    </section>
+  </main>
+
+  <%- include("partials/footer") %>
+
+  <script src="/script.js" defer></script>
+</body>
+</html>

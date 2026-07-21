@@ -180,7 +180,8 @@ textarea {
 }
 
 .home-hero .eyebrow,
-.reviews-hero .eyebrow {
+.reviews-hero .eyebrow,
+.profile-hero .eyebrow {
   color: var(--sage);
 }
 
@@ -689,6 +690,23 @@ textarea:focus {
   color: var(--white);
 }
 
+.profile-hero .hero-content {
+  width: min(1120px, calc(100% - 3rem));
+  margin: 0 auto;
+}
+
+.profile-hero .hero-description {
+  max-width: 660px;
+}
+
+.profile-hero h1 {
+  max-width: 760px;
+  margin: 0.6rem 0 1rem;
+  font-size: clamp(2.7rem, 7vw, 4.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
 .profile-page {
   width: min(1120px, calc(100% - 3rem));
   margin: 0 auto;
@@ -700,7 +718,7 @@ textarea:focus {
   border: 1px solid var(--border);
   border-radius: 1rem;
   background: var(--white);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-soft);
 }
 
 .profile-details-heading {
@@ -745,7 +763,7 @@ textarea:focus {
 
 .profile-information-item dt {
   margin-bottom: 0.4rem;
-  color: var(--muted-text);
+  color: var(--muted);
   font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -755,7 +773,7 @@ textarea:focus {
 .profile-information-item dd {
   margin: 0;
   overflow-wrap: anywhere;
-  color: var(--heading);
+  color: var(--dark);
   font-size: 1.05rem;
   font-weight: 700;
 }
@@ -863,6 +881,10 @@ textarea:focus {
 
   .profile-information {
     grid-template-columns: 1fr;
+  }
+
+  .profile-hero .hero-content {
+    width: min(100% - 2rem, 1120px);
   }
 
 }
