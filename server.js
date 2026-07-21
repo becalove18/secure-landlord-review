@@ -3,12 +3,25 @@ const path = require("path");
 const helmet = require("helmet");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
-const { body, validationResult } = require("express-validator");
 
 require("dotenv").config();
 
 const pool = require("./db");
 const pgSession = require("connect-pg-simple")(session);
+
+const { requireLogin } = require("./middleware/auth");
+
+const {
+  validateReviewId,
+  requireReviewOwnership,
+} = require("./middleware/ownership");
+
+const {
+  registerValidation,
+  loginValidation,
+  reviewValidation,
+  handleValidationErrors,
+} = require("./middleware/validation");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -44,14 +57,6 @@ app.use(
   })
 );
 
-function requireLogin(req, res, next) {
-  if (!req.session.userId) {
-    return res.redirect("/login");
-  }
-
-  next();
-}
-
 app.get("/auth-status", (req, res) => {
   res.set("Cache-Control", "no-store");
 
@@ -62,7 +67,7 @@ app.get("/auth-status", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.render("index", {
+  return res.render("index", {
     isLoggedIn: Boolean(req.session.userId),
   });
 });
@@ -79,29 +84,9 @@ app.get("/register", (req, res) => {
 
 app.post(
   "/register",
-  [
-    body("username")
-      .trim()
-      .isLength({ min: 3, max: 50 })
-      .withMessage("Username must be between 3 and 50 characters."),
-
-    body("email")
-      .trim()
-      .isEmail()
-      .withMessage("Enter a valid email address.")
-      .normalizeEmail(),
-
-    body("password")
-      .isLength({ min: 8, max: 72 })
-      .withMessage("Password must be between 8 and 72 characters."),
-  ],
+  registerValidation,
+  handleValidationErrors,
   async (req, res) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(400).send(errors.array()[0].msg);
-    }
-
     const { username, email, password } = req.body;
 
     try {
@@ -147,17 +132,9 @@ app.get("/login", (req, res) => {
 
 app.post(
   "/login",
-  [
-    body("email").trim().isEmail().normalizeEmail(),
-    body("password").notEmpty(),
-  ],
+  loginValidation,
+  handleValidationErrors,
   async (req, res) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(400).send("Invalid login information.");
-    }
-
     const { email, password } = req.body;
 
     try {
@@ -237,7 +214,7 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/submit-review", requireLogin, (req, res) => {
-  res.render("submit-review", {
+  return res.render("submit-review", {
     isLoggedIn: true,
   });
 });
@@ -245,33 +222,9 @@ app.get("/submit-review", requireLogin, (req, res) => {
 app.post(
   "/submit-review",
   requireLogin,
-  [
-    body("landlord_name")
-      .trim()
-      .isLength({ min: 2, max: 100 })
-      .withMessage("Landlord name must be between 2 and 100 characters."),
-
-    body("property_address")
-      .trim()
-      .isLength({ min: 5, max: 200 })
-      .withMessage("Property address must be between 5 and 200 characters."),
-
-    body("rating")
-      .isInt({ min: 1, max: 5 })
-      .withMessage("Rating must be between 1 and 5."),
-
-    body("review_text")
-      .trim()
-      .isLength({ min: 10, max: 1000 })
-      .withMessage("Review must be between 10 and 1000 characters."),
-  ],
+  reviewValidation,
+  handleValidationErrors,
   async (req, res) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(400).send(errors.array()[0].msg);
-    }
-
     const {
       landlord_name,
       property_address,
@@ -327,96 +280,27 @@ app.post(
   }
 );
 
-app.get("/reviews/:id/edit", requireLogin, async (req, res) => {
-  const reviewId = Number(req.params.id);
-
-  if (!Number.isInteger(reviewId) || reviewId < 1) {
-    return res.status(400).send("Invalid review ID.");
-  }
-
-  try {
-    const result = await pool.query(
-      `SELECT
-         reviews.id AS review_id,
-         reviews.rating,
-         reviews.review_text,
-         landlords.landlord_name,
-         landlords.property_address
-       FROM reviews
-       INNER JOIN landlords
-         ON reviews.landlord_id = landlords.id
-       WHERE reviews.id = $1
-         AND reviews.user_id = $2`,
-      [reviewId, req.session.userId]
-    );
-
-    if (result.rows.length === 0) {
-      return res
-        .status(404)
-        .send("Review not found, or you do not have permission to edit it.");
-    }
-
-    const review = result.rows[0];
-
+app.get(
+  "/reviews/:id/edit",
+  requireLogin,
+  validateReviewId,
+  requireReviewOwnership,
+  (req, res) => {
     return res.render("edit-review", {
-        isLoggedIn: true,
-        review,
+      isLoggedIn: true,
+      review: req.review,
     });
-  } catch (error) {
-    console.error("Edit review page error:", error);
-
-    return res.status(500).send(
-      "The review editing page could not be loaded."
-    );
   }
-});
+);
 
 app.post(
   "/reviews/:id/edit",
   requireLogin,
-  [
-    body("landlord_name")
-      .trim()
-      .isLength({ min: 2, max: 100 })
-      .withMessage(
-        "Landlord name must be between 2 and 100 characters."
-      ),
-
-    body("property_address")
-      .trim()
-      .isLength({ min: 5, max: 200 })
-      .withMessage(
-        "Property address must be between 5 and 200 characters."
-      ),
-
-    body("rating")
-      .isInt({ min: 1, max: 5 })
-      .withMessage(
-        "Rating must be between 1 and 5."
-      ),
-
-    body("review_text")
-      .trim()
-      .isLength({ min: 10, max: 1000 })
-      .withMessage(
-        "Review must be between 10 and 1000 characters."
-      ),
-  ],
+  validateReviewId,
+  requireReviewOwnership,
+  reviewValidation,
+  handleValidationErrors,
   async (req, res) => {
-    const reviewId = Number(req.params.id);
-
-    if (!Number.isInteger(reviewId) || reviewId < 1) {
-      return res.status(400).send("Invalid review ID.");
-    }
-
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(400).send(
-        errors.array()[0].msg
-      );
-    }
-
     const {
       landlord_name,
       property_address,
@@ -424,34 +308,15 @@ app.post(
       review_text,
     } = req.body;
 
+    const reviewId = req.reviewId;
+    const landlordId = req.review.landlord_id;
+
     let client;
 
     try {
       client = await pool.connect();
 
       await client.query("BEGIN");
-
-      const ownedReview = await client.query(
-        `SELECT landlord_id
-         FROM reviews
-         WHERE id = $1
-           AND user_id = $2
-         FOR UPDATE`,
-        [reviewId, req.session.userId]
-      );
-
-      if (ownedReview.rows.length === 0) {
-        await client.query("ROLLBACK");
-
-        return res
-          .status(404)
-          .send(
-            "Review not found, or you do not have permission to edit it."
-          );
-      }
-
-      const landlordId =
-        ownedReview.rows[0].landlord_id;
 
       await client.query(
         `UPDATE landlords
@@ -503,12 +368,10 @@ app.post(
 app.post(
   "/reviews/:id/delete",
   requireLogin,
+  validateReviewId,
+  requireReviewOwnership,
   async (req, res) => {
-    const reviewId = Number(req.params.id);
-
-    if (!Number.isInteger(reviewId) || reviewId < 1) {
-      return res.status(400).send("Invalid review ID.");
-    }
+    const reviewId = req.reviewId;
 
     let client;
 
@@ -535,8 +398,7 @@ app.post(
           );
       }
 
-      const landlordId =
-        deletedReview.rows[0].landlord_id;
+      const landlordId = deletedReview.rows[0].landlord_id;
 
       await client.query(
         `DELETE FROM landlords
